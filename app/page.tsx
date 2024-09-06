@@ -25,21 +25,19 @@ import { SubmitButton } from "@/components/submit-button";
 import { User } from "lucide-react";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { redirect } from "next/navigation";
-
 export default function Index() {
-  const checkUser = async () => {
-    const {
-      data: { user },
-    } = await createClient().auth.getUser();
-    if (user) {
-      // console.log(user);
-      return redirect('/verified')
-    }
-  };
+  const supabase = createClient();
   useEffect(() => {
-
+    const checkUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        return redirect("/verified");
+      }
+    };
     checkUser();
-  }, []);
+  }, [supabase]);
 
   // const
   return (

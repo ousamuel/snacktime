@@ -1,3 +1,5 @@
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
 import DeployButton from "@/components/deploy-button";
 import { EnvVarWarning } from "@/components/env-var-warning";
 import HeaderAuth from "@/components/header-auth";
@@ -19,11 +21,13 @@ export const metadata = {
   description: "Snacktime",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  
+
   return (
     <html lang="en" className={GeistSans.className} suppressHydrationWarning>
       <body className="bg-background text-foreground">

@@ -9,21 +9,7 @@ export default async function Layout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return redirect("/sign-in");
-  } else if (
-    !["snacktimeexec@gmail.com", "coinchip167@gmail.com", "eddiehurhur@gmail.com"].includes(
-      user.email || ""
-    )
-  ) {
-    return redirect("/waitlist");
-  }
+  
 
   return (
     <>
