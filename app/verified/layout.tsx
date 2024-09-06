@@ -18,7 +18,7 @@ export default async function Layout({
   if (!user) {
     return redirect("/sign-in");
   } else if (
-    !["snacktimeexec@gmail.com", "coinchip167@gmail.com"].includes(
+    !["snacktimeexec@gmail.com", "coinchip167@gmail.com", "eddiehurhur@gmail.com"].includes(
       user.email || ""
     )
   ) {
