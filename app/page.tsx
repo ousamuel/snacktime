@@ -34,6 +34,7 @@ export default function Index() {
     }
   };
   useEffect(() => {
+
     checkUser();
   }, []);
 
@@ -54,7 +55,9 @@ export default function Index() {
         </div>
       </nav>
       <Drawer>
-        <DrawerTrigger className="text-xl p-10 bg-accent my-10">Log in</DrawerTrigger>
+        <DrawerTrigger className="text-xl p-10 bg-accent my-10">
+          Log in
+        </DrawerTrigger>
         <DrawerContent className="items-center h-2/3">
           {/* <DrawerHeader>
             <DrawerTitle>Are you absolutely sure?</DrawerTitle>

@@ -8,14 +8,15 @@ import { ThemeProvider } from "next-themes";
 import Link from "next/link";
 import "./globals.css";
 
-const defaultUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-  ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-  : "http://localhost:3000";
+const defaultUrl =
+  process.env.NODE_ENV == "development"
+    ? `http://localhost:3000`
+    : "https://www.snacktimeworldwide.com/";
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: "Snacktime Worldwide",
+  description: "Snacktime",
 };
 
 export default function RootLayout({
