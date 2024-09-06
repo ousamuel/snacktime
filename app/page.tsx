@@ -1,8 +1,4 @@
-"use client";
 import Hero from "@/components/hero";
-// import ConnectSupabaseSteps from "@/components/tutorial/connect-supabase-steps";
-// import SignUpUserSteps from "@/components/tutorial/sign-up-user-steps";
-// import { hasEnvVars } from "@/utils/supabase/check-env-vars";
 import {
   Drawer,
   DrawerClose,
@@ -15,29 +11,25 @@ import {
 } from "@/components/ui/drawer";
 import { signInAction } from "./actions";
 import { Button } from "@/components/ui/button";
-import generate_code from "@/utils/generate_code";
 import Link from "next/link";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useState, useEffect } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/server";
 import { SubmitButton } from "@/components/submit-button";
-import { User } from "lucide-react";
-import { DialogTitle } from "@radix-ui/react-dialog";
 import { redirect } from "next/navigation";
 export default function Index() {
-  const supabase = createClient();
-  useEffect(() => {
-    const checkUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        return redirect("/verified");
-      }
-    };
-    checkUser();
-  }, [supabase]);
+  // const supabase = createClient();
+  // useEffect(() => {
+  //   const checkUser = async () => {
+  //     const {
+  //       data: { user },
+  //     } = await supabase.auth.getUser();
+  //     if (user) {
+  //       return redirect("/verified");
+  //     }
+  //   };
+  //   checkUser();
+  // }, [supabase]);
 
   // const
   return (
