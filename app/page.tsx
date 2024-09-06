@@ -30,7 +30,7 @@ export default function Index() {
       data: { user },
     } = await createClient().auth.getUser();
     if (user) {
-      console.log(User);
+      console.log(user);
     }
   };
   useEffect(() => {
