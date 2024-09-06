@@ -10,9 +10,11 @@ export default async function ProtectedPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    return redirect("/sign-in");
-  }
+  // if (!user) {
+  //   return redirect("/sign-in");
+  // } else if (user.id != "85f24c34-669b-4e61-a0a6-bef00e1b9d5") {
+  //   return redirect("/waitlist");
+  // }
 
   return (
     <div className="flex-1 w-full flex flex-col gap-12">
