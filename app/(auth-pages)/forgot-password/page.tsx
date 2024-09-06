@@ -32,7 +32,6 @@ export default function ForgotPassword({
           <FormMessage message={searchParams} />
         </div>
       </form>
-      <SmtpMessage />
     </>
   );
 }
