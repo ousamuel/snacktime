@@ -13,7 +13,7 @@ import "./globals.css";
 const defaultUrl =
   process.env.NODE_ENV == "development"
     ? `http://localhost:3000`
-    : "https://www.snacktimeworldwide.com/";
+    : "https://www.snacktimeworldwide.com";
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
