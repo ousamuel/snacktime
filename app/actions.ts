@@ -11,6 +11,7 @@ export const signUpAction = async (formData: FormData) => {
   // const origin = headers().get("origin");
   let origin =
     process.env.NEXT_PUBLIC_REDIRECT || "https://www.snacktimeworldwide.com";
+  console.log("actionsts", origin);
   if (!email || !password) {
     return { error: "Email and password are required" };
   }
