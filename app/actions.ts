@@ -10,7 +10,6 @@ export const signUpAction = async (formData: FormData) => {
   const supabase = createClient();
   const origin = headers().get("origin");
   console.log(origin);
-  // const origin = "http://localhost:3000";
   if (!email || !password) {
     return { error: "Email and password are required" };
   }
