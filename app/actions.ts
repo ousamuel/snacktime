@@ -8,16 +8,17 @@ export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
   const supabase = createClient();
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || headers().get("origin");
+  // const origin = headers().get("origin");
+  let origin =
+    process.env.NEXT_PUBLIC_REDIRECT || "https://www.snacktimeworldwide.com";
   if (!email || !password) {
     return { error: "Email and password are required" };
   }
-
   const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: `${origin}/auth/callback`,
+      emailRedirectTo: `${origin}/auth/callback?redirect_to=/verified`,
     },
   });
 
