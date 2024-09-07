@@ -20,6 +20,6 @@ export async function GET(request: Request) {
   }
 
   // URL to redirect to after sign up process completes
-  return NextResponse.redirect(`https://snacktimeworldwide.com/verified`);
+  return NextResponse.redirect(`${origin}/verified`);
   // return NextResponse.redirect(`${origin}/protected`);
 }
