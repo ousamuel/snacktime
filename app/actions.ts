@@ -8,10 +8,9 @@ export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
   const supabase = createClient();
-  const origin =
-    process.env.NODE_ENV == "development"
-      ? "http://localhost:3000"
-      : "https://www.snacktimeworldwide.com";
+  const origin = headers().get("origin");
+  console.log(origin)
+  // const origin = "http://localhost:3000";
   if (!email || !password) {
     return { error: "Email and password are required" };
   }
