@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
   const origin = requestUrl.origin;
-  console.log(requestUrl, code, origin)
+  console.log(requestUrl, code, origin);
 
   const redirectTo = requestUrl.searchParams.get("redirect_to")?.toString();
   if (code) {
@@ -16,9 +16,9 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code);
   }
 
-  // if (redirectTo) {
-  //   return NextResponse.redirect(`${origin}${redirectTo}`);
-  // }
+  if (redirectTo) {
+    return NextResponse.redirect(redirectTo);
+  }
 
   // URL to redirect to after sign up process completes
   return NextResponse.redirect(`${origin}/verified`);

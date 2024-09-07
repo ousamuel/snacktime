@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { createClient } from "@/utils/supabase/server";
 import { SubmitButton } from "@/components/submit-button";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 export default function Index() {
   // const supabase = createClient();
   // useEffect(() => {
@@ -47,6 +48,7 @@ export default function Index() {
           </Link>
         </div>
       </nav>
+      
       <Drawer>
         <DrawerTrigger className="text-xl p-10 bg-accent my-10">
           Log in
