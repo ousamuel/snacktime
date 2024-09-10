@@ -3,14 +3,13 @@ import { redirect } from "next/navigation";
 // import AdminPanelLayout from "@/components/admin-panel/admin-panel-layout";
 import Link from "next/link";
 import HeaderAuth from "@/components/header-auth";
+import { Button } from "@/components/ui/button";
 
 export default async function Layout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  
-
   return (
     <>
       <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
@@ -24,6 +23,7 @@ export default async function Layout({
             SNACKTIME
           </Link>
           <HeaderAuth />
+          <Link href="/verified/account">Account</Link>
         </div>
       </nav>
       {children}

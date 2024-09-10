@@ -15,16 +15,24 @@ export default async function Waitlist({
 }: {
   searchParams: Message;
 }) {
-  // const supabase = createClient();
+  const supabase = createClient();
 
-  // const {
-  //   data: { user },
-  // } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  // if (!user) {
-  //   return redirect("/");
-  // }
-
+  if (!user) {
+    return redirect("/");
+  } else if (
+    [
+      "snacktimeexec@gmail.com",
+      "coinchip166@gmail.com",
+      "aceit.customercare@gmail.com",
+      "eddiehurhur@gmail.com",
+    ].includes(user.email || "")
+  ) {
+    return redirect("/verified");
+  }
   return (
     <div className="flex-1 w-full flex flex-col gap-12 text-center items-center px-3">
       <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16 ">

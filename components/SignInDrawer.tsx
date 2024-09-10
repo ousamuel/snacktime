@@ -1,46 +1,17 @@
 import {
-  Drawer,
-  DrawerTrigger,
+  DrawerContent,
+  DrawerDescription,
+  DrawerTitle,
 } from "@/components/ui/drawer";
+import { signInAction } from "@/app/actions";
 import Link from "next/link";
-import SignInDrawerContent from "@/components/SignInDrawer";
-export default function Index() {
-  // const supabase = createClient();
-  // useEffect(() => {
-  //   const checkUser = async () => {
-  //     const {
-  //       data: { user },
-  //     } = await supabase.auth.getUser();
-  //     if (user) {
-  //       return redirect("/verified");
-  //     }
-  //   };
-  //   checkUser();
-  // }, [supabase]);
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { SubmitButton } from "@/components/submit-button";
+export default function SignInDrawerContent() {
 
-  // const
   return (
-    <>
-      {/* <Hero /> */}
-      <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-        <div className="w-full max-w-5xl flex justify-center items-center p-3 px-5 text-sm">
-          {/* <div className="flex gap-5 items-center font-semibold">
-                    <Link href={"/"}>Next.js Supabase Starter</Link>
-                    <div className="flex items-center gap-2">
-                    </div>
-                  </div> */}
-          <Link href="/" className="text-4xl font-bold">
-            SNACKTIME
-          </Link>
-        </div>
-      </nav>
-
-      <Drawer>
-        <DrawerTrigger className="text-xl p-10 bg-accent my-10">
-          Log in
-        </DrawerTrigger>
-        <SignInDrawerContent />
-        {/* <DrawerContent className="items-center h-2/3">
+        <DrawerContent className="items-center h-2/3">
           <form className="flex-1 flex flex-col w-full  gap-2 text-foreground [&>input]:mb-6 max-w-md p-4">
             <DrawerTitle>
               <p className="text-2xl font-medium">Log in</p>
@@ -83,8 +54,6 @@ export default function Index() {
               </div>
             </DrawerDescription>
           </form>
-        </DrawerContent> */}
-      </Drawer>
-    </>
+        </DrawerContent>
   );
 }

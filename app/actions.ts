@@ -5,16 +5,63 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export const signUpAction = async (formData: FormData) => {
+  "use server";
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
+  const confirmPassword = formData.get("confirmPassword")?.toString();
+  const referralCode = formData.get("referralCode")?.toString();
   const supabase = createClient();
   const origin = headers().get("origin");
-  console.log(origin);
+
   if (!email || !password) {
-    return { error: "Email and password are required" };
+    return encodedRedirect(
+      "error",
+      "/sign-up",
+      "Email and password are required"
+    );
   }
-  // console.log
-  const { error } = await supabase.auth.signUp({
+  if (confirmPassword != password) {
+    return encodedRedirect("error", "/sign-up", "Passwords are not matching");
+  }
+  if (!referralCode) {
+    return encodedRedirect("error", "/sign-up", "Referral code is required");
+  }
+  let currentDateTime = new Date();
+  const { data: validReferralData, error: referralError } = await supabase
+    .from("referrals")
+    .select()
+    .eq("referral_code", referralCode);
+  // .eq("used", false)
+  // .single();
+
+  console.log(validReferralData);
+  // || validReferral.expires_at < currentDateTime
+  if (referralError) {
+    console.log(referralError);
+    return encodedRedirect(
+      "error",
+      "/sign-up",
+      "Invalid or expired referral code"
+    );
+  }
+
+  // // Query the `public.users` table to check if the email is already in use
+  // const { data: existingUser, error: userError } = await supabase
+  //   .from("users")
+  //   .select("id")
+  //   .eq("email", email)
+  //   .single();
+  // if (userError && userError.code !== "PGRST116") {
+  //   // Handle any unexpected errors (ignore no rows found error)
+  //   console.error("Error querying users:", userError.message);
+  //   return { error: "Unexpected error occurred. Please try again." };
+  // }
+  // // If an existing user is found, prevent the sign-up
+  // if (existingUser) {
+  //   return encodedRedirect("error", "/signup", "Email already in use");
+  // }
+
+  const { error: signUpError } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -22,14 +69,18 @@ export const signUpAction = async (formData: FormData) => {
     },
   });
 
-  if (error) {
-    console.error(error.code + " " + error.message);
-    return encodedRedirect("error", "/sign-up", error.message);
+  if (signUpError) {
+    console.error(signUpError.code + " " + signUpError.message);
+    return encodedRedirect(
+      "error",
+      "/sign-up",
+      "Error signing up. Please try again or contact us snacktimeexec@gmail.com"
+    );
   } else {
     return encodedRedirect(
       "success",
       "/sign-up",
-      "Thanks for signing up! Please check your email for a verification link."
+      "Thanks for signing up!  Please check your email for a verification link."
     );
   }
 };
@@ -45,7 +96,7 @@ export const signInAction = async (formData: FormData) => {
   });
 
   if (error) {
-    return encodedRedirect("error", "/sign-in", error.message);
+    return { error: "Invalid login credentials" };
   }
 
   return redirect("/verified");
