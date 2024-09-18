@@ -1,15 +1,13 @@
 // app/api/admin/route.js
 import { createClient } from "@supabase/supabase-js";
 // import { createClient } from "@/utils/supabase/server";
-
 import { NextResponse } from "next/server";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL|| "",
-  process.env.SUPABASE_SERVICE_ROLE_KEY||""
-);
-
 export async function POST(request:any) {
+  const supabase = createClient(
+    process.env.SUPABASE_URL|| "",
+    process.env.SUPABASE_SERVICE_ROLE_KEY||""
+  );
   try {
     // Parse the request body
     const { userId } = await request.json();
