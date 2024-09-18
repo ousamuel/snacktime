@@ -17,9 +17,5 @@ export async function POST() {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
-  return NextResponse.json(
-    { user },
-    { status: 200 },
-    { success: "Authenticated" }
-  );
+  return NextResponse.json({ user }, { status: 200 });
 }

@@ -1,11 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
-export async function POST(request) {
+export async function POST(request:any) {
   try {
     const supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
+      process.env.SUPABASE_URL||"",
+      process.env.SUPABASE_SERVICE_ROLE_KEY||""
     );
     // Parse the request body
     const { category, subject, description, userEmail, userId } = await request.json();
