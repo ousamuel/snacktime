@@ -3,14 +3,24 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { v4 as uuidv4 } from "uuid";
 import { redirect } from "next/navigation";
+import { ContentLayout } from "@/components/admin-panel/content-layout";
+import Link from "next/link";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 // NEED TO DO: implement something like aws lambda to periodically delete expired links
 const Account = () => {
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showReferral, setShowReferral] = useState<string>("");
-  const supabase = createClient();
   const [mySession, setMySession] = useState<any>();
+  const supabase = createClient();
 
   useEffect(() => {
     supabase.auth.getUser().then((session) => {
@@ -91,37 +101,58 @@ const Account = () => {
     });
   };
   return (
-    <main className="w-full h-full p-4 flex justify-between">
-      <button onClick={fetchReferrals}> fetch referrals</button>
-      <button onClick={() => console.log(generateCode(8))}>make code 8</button>
-      <button
-        onClick={() => {
-          deleteAccount();
-        }}
-      >
-        delete account
-      </button>
-      <button
-        onClick={createReferral}
-        className="bg-blue-500 text-white p-2 rounded"
-      >
-        Generate Invite Link
-      </button>
+    <ContentLayout title="Account">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link href="/">Home</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Settings</BreadcrumbPage>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Account</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <main className="w-full h-full p-4 flex justify-between">
+        <button onClick={fetchReferrals}> fetch referrals</button>
+        <button onClick={() => console.log(generateCode(8))}>
+          make code 8
+        </button>
+        <button
+          onClick={() => {
+            deleteAccount();
+          }}
+        >
+          delete account
+        </button>
+        <button
+          onClick={createReferral}
+          className="bg-blue-500 text-white p-2 rounded"
+        >
+          Generate Invite Link
+        </button>
 
-      {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
-      {successMessage && (
-        <p className="text-green-500 mt-4">{successMessage}</p>
-      )}
-      {inviteLink && (
-        <div className="mt-4">
-          <p>Link will expire in {minutesTillExpire} minutes</p>
-          <p>Referral Code: {showReferral}</p>
-          <a href={inviteLink} className="text-blue-500 underline">
-            Click to copy invite link to clipboard
-          </a>
-        </div>
-      )}
-    </main>
+        {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
+        {successMessage && (
+          <p className="text-green-500 mt-4">{successMessage}</p>
+        )}
+        {inviteLink && (
+          <div className="mt-4">
+            <p>Link will expire in {minutesTillExpire} minutes</p>
+            <p>Referral Code: {showReferral}</p>
+            <a href={inviteLink} className="text-blue-500 underline">
+              Click to copy invite link to clipboard
+            </a>
+          </div>
+        )}
+      </main>
+    </ContentLayout>
   );
 };
 

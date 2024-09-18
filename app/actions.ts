@@ -4,6 +4,12 @@ import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+export const addProductAction = async (formData: any) => {
+  console.log(formData);
+
+  return { error: "nice" };
+};
+
 export const signUpAction = async (formData: FormData) => {
   "use server";
   const email = formData.get("email")?.toString();

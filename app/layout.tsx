@@ -5,6 +5,8 @@ import { GeistSans } from "geist/font/sans";
 import { ThemeProvider } from "next-themes";
 import Link from "next/link";
 import "./globals.css";
+import AdminPanelLayout from "@/components/admin-panel/admin-panel-layout";
+import { Toaster } from "@/components/ui/toaster";
 
 const defaultUrl =
   process.env.NODE_ENV == "development"
@@ -22,10 +24,16 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  
-
   return (
     <html lang="en" className={GeistSans.className} suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin={+true} />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Rubik+Bubbles&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className="bg-background text-foreground">
         {/* <Analytics /> */}
         {/* <SpeedInsights /> */}
@@ -35,10 +43,10 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <main className="w-full min-h-screen flex flex-col items-center">
-            {children}
+          <main className="min-h-screen flex flex-col items-center">
+            <div className="flex flex-col w-full flex-1">{children}</div>
           </main>
-          {/* <Toaster /> */}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

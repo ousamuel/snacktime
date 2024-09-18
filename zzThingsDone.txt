@@ -1,0 +1,2 @@
+Component to Purpose
+- Resizable shadcn --> admin table for products

@@ -67,3 +67,57 @@
     @apply bg-background text-foreground;
   }
 }
+.rubik-font {
+  font-family: "Rubik Bubbles", system-ui;
+  font-weight: 400;
+  font-style: normal;
+}
+@keyframes bounce-up {
+  0%,
+  100% {
+    transform: translateY(-2px);
+  }
+  50% {
+    transform: translateY(2px); /* Bounces up */
+  }
+}
+@keyframes bounce-down {
+  0%,
+  100% {
+    transform: translateY(2px);
+  }
+  50% {
+    transform: translateY(-2px); /* Bounces down */
+  }
+}
+.bounce-container p {
+  animation-duration: 3s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.bounce-container p:nth-child(odd) {
+  animation-name: bounce-up;
+}
+
+.bounce-container p:nth-child(even) {
+  animation-name: bounce-down;
+}
+
+.card {
+  /* flex: 1 1 120px; */
+  /* width: 300px; */
+  /* height: 300px; */
+  aspect-ratio: 2/3;
+  height: 70%;
+  width: calc(100% - 10px);
+  object-fit: cover; /* Crops the image if it’s too large while maintaining aspect ratio */
+  object-position: center; /* Centers the cropped image */
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  /* padding: 20px; */
+  color: white;
+  /* border-radius: 10px; */
+  margin: 5px;
+}

@@ -16,23 +16,33 @@ export default async function Waitlist({
   searchParams: Message;
 }) {
   const supabase = createClient();
-
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) {
     return redirect("/");
-  } else if (
-    [
-      "snacktimeexec@gmail.com",
-      "coinchip166@gmail.com",
-      "aceit.customercare@gmail.com",
-      "eddiehurhur@gmail.com",
-    ].includes(user.email || "")
-  ) {
-    return redirect("/verified");
   }
+  const user = session.user;
+  if (user) {
+    await checkAdmin(user.id);
+  }
+
+  async function checkAdmin(userId: string) {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/admin`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId }),
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      return redirect("/verified");
+    } else {
+      // console.log("not admin");
+    }
+  }
+
   return (
     <div className="flex-1 w-full flex flex-col gap-12 text-center items-center px-3">
       <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16 ">
@@ -42,13 +52,11 @@ export default async function Waitlist({
               SNACKTIME
             </Link>
           </div>
-          <HeaderAuth />
         </div>
       </nav>
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl my-4">
         Coming soon.
       </h1>
-      <h3 className="sm:w-3/5 scroll-m-20 text-2xl font-semibold tracking-tight"></h3>
     </div>
   );
 }

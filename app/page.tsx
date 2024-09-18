@@ -1,24 +1,7 @@
-import {
-  Drawer,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+import { Drawer, DrawerTrigger } from "@/components/ui/drawer";
 import Link from "next/link";
 import SignInDrawerContent from "@/components/SignInDrawer";
 export default function Index() {
-  // const supabase = createClient();
-  // useEffect(() => {
-  //   const checkUser = async () => {
-  //     const {
-  //       data: { user },
-  //     } = await supabase.auth.getUser();
-  //     if (user) {
-  //       return redirect("/verified");
-  //     }
-  //   };
-  //   checkUser();
-  // }, [supabase]);
-
-  // const
   return (
     <>
       {/* <Hero /> */}
