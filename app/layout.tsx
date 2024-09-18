@@ -28,7 +28,7 @@ export default async function RootLayout({
     <html lang="en" className={GeistSans.className} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin={+true} />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
           href="https://fonts.googleapis.com/css2?family=Rubik+Bubbles&display=swap"
           rel="stylesheet"
