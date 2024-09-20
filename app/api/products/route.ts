@@ -12,7 +12,7 @@ export async function GET() {
     const { data: FlowerData, error: FlowerError } = await supabase
       .from("products")
       .select("*")
-      .eq("category", "Flower");
+      .eq("category", "flower");
 
     if (FlowerError) {
       return NextResponse.json({ failure: "no flowers" });

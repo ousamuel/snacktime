@@ -13,7 +13,7 @@ import { addToCart } from "@/lib/reducers/cartReducer";
 export default function VerifiedHome() {
   const [flowerProducts, setFlowerProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const cacheExpiryTime = 3600000 * 2; 
+  const cacheExpiryTime = 3600000 * 2;
   //  3600000 = 1 hour
 
   const { cartItems } = useSelector((state: RootState) => state.cart);
@@ -23,10 +23,10 @@ export default function VerifiedHome() {
   };
 
   useEffect(() => {
-    console.log(cartItems);
     getProducts();
   }, []);
   const getProducts = async () => {
+    // localStorage.clear();
     const cachedData = localStorage.getItem("flowerProducts");
     if (cachedData) {
       const { data, timestamp } = JSON.parse(cachedData);
