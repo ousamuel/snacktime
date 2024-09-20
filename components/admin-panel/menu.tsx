@@ -9,6 +9,14 @@ import { getMenuList } from "@/lib/menu-list";
 import { getAdminList } from "@/lib/admin-list";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useRouter } from "next/navigation";
+import { Dispatch } from "@reduxjs/toolkit";
+import userReducer, {
+  setLoading,
+  setUser,
+  setSecureAccess,
+  setError,
+} from "@/lib/reducers/userReducer";
 import { CollapseMenuButton } from "@/components/admin-panel/collapse-menu-button";
 import {
   Tooltip,
@@ -16,10 +24,7 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "@/components/ui/tooltip";
-import FetchDataSteps from "@/components/tutorial/fetch-data-steps";
 import { createClient } from "@/utils/supabase/client";
-import { InfoIcon } from "lucide-react";
-import { redirect } from "next/navigation";
 import { signOutAction } from "@/app/actions";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -29,12 +34,59 @@ interface MenuProps {
 }
 
 export function Menu({ isOpen }: MenuProps) {
+  const router = useRouter();
   const pathname = usePathname();
   const menuList = getMenuList(pathname);
   const adminList = getAdminList(pathname);
   const { user, secureAccess, loading, error } = useSelector(
     (state: RootState) => state.user
   );
+
+  // storing user data and admin check into redux store
+  const dispatch = useDispatch();
+  const fetchUserAndCheckAdmin = (): any => {
+    return async (dispatch: Dispatch) => {
+      try {
+        // Start loading
+        dispatch(setLoading(true));
+
+        // Fetch the user session
+        const userResponse = await fetch("/api/user", { method: "POST" });
+        const userData = await userResponse.json();
+
+        if (userResponse.ok) {
+          // Dispatch user data to the store
+          dispatch(setUser(userData.user));
+
+          // Check if the user is an admin
+          const adminResponse = await fetch("/api/admin", {
+            method: "POST",
+            body: JSON.stringify({ userId: userData.user.id }),
+          });
+          const adminData = await adminResponse.json();
+
+          if (adminResponse.ok && adminData.success) {
+            dispatch(setSecureAccess(true)); // User has admin access
+          } else {
+            dispatch(setSecureAccess(false)); // User does not have admin access
+          }
+        } else {
+          throw new Error(userData.error || "Failed to fetch user data");
+        }
+      } catch (error: any) {
+        dispatch(setError(error.message));
+        signOutAction();
+      } finally {
+        dispatch(setLoading(false)); // Stop loading
+        router.push("/verified/home");
+      }
+    };
+  };
+  useEffect(() => {
+    if (!user) {
+      dispatch(fetchUserAndCheckAdmin());
+    }
+  }, [dispatch]);
 
   return (
     <ScrollArea className="[&>div>div[style]]:!block h-full">

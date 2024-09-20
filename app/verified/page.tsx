@@ -5,6 +5,7 @@ import { Dispatch } from "@reduxjs/toolkit";
 import { useDispatch, useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import { signOutAction } from "../actions";
+import { redirect } from "next/navigation";
 import userReducer, {
   setLoading,
   setUser,

@@ -13,6 +13,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/store";
 // NEED TO DO: implement something like aws lambda to periodically delete expired link
 //  or postgres trigger that works on every X amount of inserts --> run a delete
 const Account = () => {
@@ -20,18 +22,14 @@ const Account = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showReferral, setShowReferral] = useState<string>("");
-  const [mySession, setMySession] = useState<any>();
+  // const [mySession, setMySession] = useState<any>();
   const supabase = createClient();
 
-  useEffect(() => {
-    supabase.auth.getUser().then((session) => {
-      // do something here with the session like  ex: setState(session)
-      setMySession(session);
-    });
-  }, []);
+  const { user, secureAccess, loading, error } = useSelector(
+    (state: RootState) => state.user
+  );
 
   function generateCode(length: number) {
-    console.log(mySession);
     let result = "";
     const characters = "ABCDEFGHIJKLMNPQRSTUVWXYZ123456789";
     // "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -63,8 +61,8 @@ const Account = () => {
       const { data, error } = await supabase.from("referrals").insert([
         {
           referral_code: referralCode,
-          referrer_id: mySession.data.user.id,
-          referrer_email: mySession.data.user.email,
+          referrer_id: user.id,
+          referrer_email: user.email,
           used: false,
           expires_at: expiresAt,
         },
@@ -120,7 +118,7 @@ const Account = () => {
         </BreadcrumbList>
       </Breadcrumb>
       <main className="w-full h-full p-4 flex justify-between">
-        <div>{mySession ? mySession.data.user.email : ""}</div>
+        <div>{user ? user.email : ""}</div>
         <button onClick={fetchReferrals}> fetch referrals</button>
         <button onClick={() => console.log(generateCode(8))}>
           make code 8
