@@ -23,6 +23,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/api/admin/route.ts", "app/api/support/route.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/api/admin/route.ts", "app/api/support/route.ts", "lib/store.ts", "lib/reducers/cartReducer.js"],
   "exclude": ["node_modules"]
 }

@@ -13,7 +13,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-// NEED TO DO: implement something like aws lambda to periodically delete expired links
+// NEED TO DO: implement something like aws lambda to periodically delete expired link
+//  or postgres trigger that works on every X amount of inserts --> run a delete
 const Account = () => {
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -29,9 +30,8 @@ const Account = () => {
     });
   }, []);
 
-  async function generateCode(length: number) {
+  function generateCode(length: number) {
     console.log(mySession);
-
     let result = "";
     const characters = "ABCDEFGHIJKLMNPQRSTUVWXYZ123456789";
     // "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -120,6 +120,7 @@ const Account = () => {
         </BreadcrumbList>
       </Breadcrumb>
       <main className="w-full h-full p-4 flex justify-between">
+        <div>{mySession ? mySession.data.user.email : ""}</div>
         <button onClick={fetchReferrals}> fetch referrals</button>
         <button onClick={() => console.log(generateCode(8))}>
           make code 8

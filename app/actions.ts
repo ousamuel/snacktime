@@ -5,9 +5,12 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export const addProductAction = async (formData: any) => {
+  if (formData.pricing_options.some((option: any) => option.cost == "")) {
+    return { error: "All pricing options must have a cost" };
+  }
   console.log(formData);
-
-  return { error: "nice" };
+  // console.log(formData.pricing_options);
+  return { success: "Saved" };
 };
 
 export const signUpAction = async (formData: FormData) => {
@@ -181,6 +184,7 @@ export const resetPasswordAction = async (formData: FormData) => {
 
 export const signOutAction = async () => {
   const supabase = createClient();
+
   await supabase.auth.signOut();
-  return redirect("/sign-in");
+  return redirect("/");
 };

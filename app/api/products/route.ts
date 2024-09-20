@@ -24,3 +24,21 @@ export async function GET() {
     return NextResponse.json({ error: "An error occurred" }, { status: 500 });
   }
 }
+export async function PATCH(request: any) {
+  try {
+    const formData = await request.json();
+    const supabase = createClient(
+      process.env.SUPABASE_URL || "",
+      process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+    );
+    const { data, error } = await supabase
+      .from("products")
+      .update(formData)
+      .eq("id", formData.id);
+    return NextResponse.json({ data: formData }, { status: 201 });
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json({ error: "An error occurred" }, { status: 500 });
+  }
+}

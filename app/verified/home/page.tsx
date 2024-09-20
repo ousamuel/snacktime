@@ -1,30 +1,47 @@
 "use client";
-import FetchDataSteps from "@/components/tutorial/fetch-data-steps";
+import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { InfoIcon } from "lucide-react";
-import { redirect } from "next/navigation";
 import { ContentLayout } from "@/components/admin-panel/content-layout";
 import Link from "next/link";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import {
-  ProductCard,
-  ProductCardContent,
-  ProductCardDescription,
-  ProductCardFooter,
-  ProductCardHeader,
-  ProductCardTitle,
-} from "@/components/ui/card-product";
-import { useState, useEffect } from "react";
-export default function VerifiedPage() {
-  const supabase = createClient();
+import { ProductCard, ProductCardFooter } from "@/components/ui/card-product";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/lib/store";
+import { Button } from "@/components/ui/button";
+import { Dispatch } from "@reduxjs/toolkit";
+import { addToCart } from "@/lib/reducers/cartReducer";
+
+export default function VerifiedHome() {
+  const [flowerProducts, setFlowerProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const cacheExpiryTime = 3600000 * 2; 
+  //  3600000 = 1 hour
+
+  const { cartItems } = useSelector((state: RootState) => state.cart);
+  const dispatch = useDispatch();
+  const handleAddToCart = (item: any) => {
+    dispatch(addToCart(item));
+  };
+
+  useEffect(() => {
+    console.log(cartItems);
+    getProducts();
+  }, []);
   const getProducts = async () => {
+    const cachedData = localStorage.getItem("flowerProducts");
+    if (cachedData) {
+      const { data, timestamp } = JSON.parse(cachedData);
+      const now = Date.now();
+      if (now - timestamp < cacheExpiryTime) {
+        // Use cached data if it's not expired
+        setFlowerProducts(data);
+        setLoading(false);
+        return;
+      }
+    }
+    // Fetch new data if no valid cache is found
+    fetchProductsFromAPI();
+  };
+  const fetchProductsFromAPI = async () => {
     try {
       const res = await fetch("/api/products", {
         method: "GET",
@@ -32,54 +49,59 @@ export default function VerifiedPage() {
           "Content-Type": "application/json",
         },
       });
-
       const data = await res.json();
-
       if (res.ok) {
         setFlowerProducts(data.flowerData);
-        console.log(data.flowerData);
+        // Store data in localStorage with a timestamp
+        const timestamp = Date.now();
+        localStorage.setItem(
+          "flowerProducts",
+          JSON.stringify({ data: data.flowerData, timestamp })
+        );
+        setLoading(false);
       } else {
+        console.error("Failed to fetch products");
       }
     } catch (error) {
-      console.error(error);
-    } finally {
+      console.error("Error fetching products:", error);
     }
   };
-  useEffect(() => {
-    getProducts();
-  }, [supabase]);
 
-  const [flowerProducts, setFlowerProducts] = useState<any[]>([]);
-  const [condimentProducts, setCondimentProducts] = useState<any[]>([]);
-  const [glassProducts, glassProduct] = useState<any[]>([]);
-
-  const mapped = [1, 2, 3, 4];
+  // if (loading) return <div>Loading...</div>;
   return (
     <ContentLayout title="Home">
-      <Breadcrumb>
-        <BreadcrumbList></BreadcrumbList>
-      </Breadcrumb>
-
-      <main>
-        <h2>Flower</h2>
-        <section className="flex gap-3 overflow-x-scroll">
-          {flowerProducts && flowerProducts.map((flowerProduct, i: number) => (
-            <ProductCard key={i} className="">
-              <img className="card rounded-md" src="/flowa.jpg" />
-              <ProductCardFooter className="flex flex-col p-2">
-                <p>{flowerProduct.name}</p>
-                <p>Product Farm</p>
-              </ProductCardFooter>
+      <main className="flex flex-col gap-4 pr-0">
+        <section className="flex flex-col">
+          <h2 className="text-black text-center scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0">
+            Flower
+          </h2>
+          <div className="flex gap-3 overflow-x-scroll pr-6">
+            {flowerProducts.map((flowerProduct, i: number) => (
+              <ProductCard key={i} className="">
+                <img className="card rounded-md" src="/flowa.jpg" />
+                <ProductCardFooter className="flex flex-col p-2">
+                  <p>{flowerProduct.name}</p>
+                  <p>Product Farm</p>
+                  <Button
+                    className=""
+                    onClick={() => {
+                      handleAddToCart(flowerProduct);
+                    }}
+                  >
+                    Add to cart
+                  </Button>
+                </ProductCardFooter>
+              </ProductCard>
+            ))}
+            <ProductCard className="bg-accent">
+              <div
+                className="rounded-md text-center text-4xl text-gray-500 flex h-full 
+              justify-center items-center"
+              >
+                View all
+              </div>
             </ProductCard>
-          ))}
-          <ProductCard className="bg-accent">
-            <div
-              className="rounded-md text-center text-4xl text-gray-500 flex h-full 
-            justify-center items-center"
-            >
-              View all
-            </div>
-          </ProductCard>
+          </div>
         </section>
       </main>
     </ContentLayout>

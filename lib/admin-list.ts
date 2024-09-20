@@ -6,6 +6,7 @@ import {
   SquarePen,
   LayoutGrid,
   LucideIcon,
+  Archive,
 } from "lucide-react";
 
 type Submenu = {
@@ -33,15 +34,20 @@ export function getAdminList(pathname: string): Group[] {
       groupLabel: "Admin",
       menus: [
         {
-          href: "/verified/admin",
-          label: "Admin",
-          active: pathname === "/verified/admin",
-          icon: Settings,
+          href: "/verified/admin/inventory",
+          label: "Inventory",
+          active: pathname === "/verified/admin/inventory",
+          icon: Archive,
           submenus: [
             {
-              href: "/verified/admin/inventory",
-              label: "Inventory",
-              active: pathname.includes("/admin/inventory"),
+              href: "/verified/admin/inventory/flower",
+              label: "Flower",
+              active: pathname.includes("/admin/inventory/flower"),
+            },
+            {
+              href: "/verified/admin/inventory/condiments",
+              label: "Condiments",
+              active: pathname.includes("/admin/inventory/condiments"),
             },
             // {
             //   href: "/posts/new",

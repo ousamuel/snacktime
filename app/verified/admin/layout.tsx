@@ -3,7 +3,11 @@ import { createClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import AdminPanelLayout from "@/components/admin-panel/admin-panel-layout";
 
-export default async function Layout() {
+export default async function Layout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const supabase = createClient(
     process.env.SUPABASE_URL || "",
     process.env.SUPABASE_SERVICE_ROLE_KEY || ""
@@ -22,4 +26,6 @@ export default async function Layout() {
       return redirect("/");
     }
   }
+
+  return <div className='bg-accent'>{children}</div>;
 }

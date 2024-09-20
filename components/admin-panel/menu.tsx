@@ -20,7 +20,10 @@ import FetchDataSteps from "@/components/tutorial/fetch-data-steps";
 import { createClient } from "@/utils/supabase/client";
 import { InfoIcon } from "lucide-react";
 import { redirect } from "next/navigation";
+import { signOutAction } from "@/app/actions";
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/lib/store";
 interface MenuProps {
   isOpen: boolean | undefined;
 }
@@ -29,33 +32,9 @@ export function Menu({ isOpen }: MenuProps) {
   const pathname = usePathname();
   const menuList = getMenuList(pathname);
   const adminList = getAdminList(pathname);
-  const [secureAccess, setSecureAccess] = useState<boolean>(false);
-  useEffect(() => {
-    const checkAdmin = async (userId: string) => {
-      const res = await fetch("/api/admin", {
-        method: "POST",
-        body: JSON.stringify({ userId }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setSecureAccess(true);
-        // console.log("Authenticated user:", data);
-      } else {
-        console.error("Error fetching user:", data);
-      }
-    };
-    const fetchUser = async () => {
-      const response = await fetch("/api/user", { method: "POST" });
-      const data = await response.json();
-      if (response.ok) {
-        checkAdmin(data.user.id);
-      } else {
-        console.error("Error fetching user:", data.error);
-      }
-    };
-
-    fetchUser();
-  }, []);
+  const { user, secureAccess, loading, error } = useSelector(
+    (state: RootState) => state.user
+  );
 
   return (
     <ScrollArea className="[&>div>div[style]]:!block h-full">
@@ -229,7 +208,10 @@ export function Menu({ isOpen }: MenuProps) {
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
                   <Button
-                    onClick={() => {}}
+                    onClick={() => {
+                      localStorage.removeItem("reduxState");
+                      signOutAction();
+                    }}
                     variant="outline"
                     className="w-full justify-center h-10 mt-5"
                   >

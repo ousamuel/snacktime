@@ -105,64 +105,66 @@ const ContactSupport = () => {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
-      <main className="w-full h-full p-4 flex justify-between flex flex-col">
-        <h2>Contact Customer Support</h2>
-        <form
-          className="flex flex-col w-full  gap-2 [&>input]:mb-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            setSubmitting(true);
-            const form = e.target as HTMLFormElement;
-            const formData = new FormData(form);
-            handleSubmit(formData);
-          }}
-        >
-          <div className="flex flex-col gap-2 [&>label]:mt-3  text-foreground text-sm">
-            <Label htmlFor="category">
-              Select one <span className="text-red-500">*</span>
-            </Label>
-            <select name="category" required className="border rounded p-2">
-              {ticketOptions.map((optionStr: string, i: number) => (
-                <option key={i} value={optionStr}>
-                  {optionStr}
-                </option>
-              ))}
-            </select>
-            <Label htmlFor="subject">
-              Subject <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              type="text"
-              name="subject"
-              className="bg-"
-              placeholder="Maximum of 50 characters"
-              maxLength={50}
-              required
-            />{" "}
-            <Label htmlFor="description">
-              Description <span className="text-red-500">*</span>
-            </Label>
-            <textarea
-              id="description"
-              name="description"
-              className="w-full p-2 border rounded"
-              placeholder="Maximum of 600 characters"
-              rows={4}
-              maxLength={600}
-              required
-            />
-            <SubmitButton className="my-4">
-              {submitting
-                ? "Submitting"
-                : successMessage
-                  ? "Success"
-                  : errorMessage
-                    ? "Error"
-                    : "Submit"}
-            </SubmitButton>
-          </div>
-        </form>
-      </main>
+      <div className="pr-6">
+        <main className="w-full h-full p-4 flex justify-between flex flex-col bg-accent">
+          <h2>Contact Customer Support</h2>
+          <form
+            className="flex flex-col w-full  gap-2 [&>input]:mb-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              setSubmitting(true);
+              const form = e.target as HTMLFormElement;
+              const formData = new FormData(form);
+              handleSubmit(formData);
+            }}
+          >
+            <div className="flex flex-col gap-2 [&>label]:mt-3  text-foreground text-sm">
+              <Label htmlFor="category">
+                Select one <span className="text-red-500">*</span>
+              </Label>
+              <select name="category" required className="border rounded p-2">
+                {ticketOptions.map((optionStr: string, i: number) => (
+                  <option key={i} value={optionStr}>
+                    {optionStr}
+                  </option>
+                ))}
+              </select>
+              <Label htmlFor="subject">
+                Subject <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                type="text"
+                name="subject"
+                className="bg-"
+                placeholder="Maximum of 50 characters"
+                maxLength={50}
+                required
+              />{" "}
+              <Label htmlFor="description">
+                Description <span className="text-red-500">*</span>
+              </Label>
+              <textarea
+                id="description"
+                name="description"
+                className="w-full p-2 border rounded"
+                placeholder="Maximum of 600 characters"
+                rows={4}
+                maxLength={600}
+                required
+              />
+              <SubmitButton className="my-4">
+                {submitting
+                  ? "Submitting"
+                  : successMessage
+                    ? "Success"
+                    : errorMessage
+                      ? "Error"
+                      : "Submit"}
+              </SubmitButton>
+            </div>
+          </form>
+        </main>
+      </div>
     </ContentLayout>
   );
 };

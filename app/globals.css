@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+textarea:focus {
+  outline: none;
+  resize: none;
+}
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -120,4 +124,75 @@
   color: white;
   /* border-radius: 10px; */
   margin: 5px;
+}
+
+.main-container {
+  position: relative;
+  /* fallback background if gradient fails */
+  background-color: #f8f9fa;
+}
+.main-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(217, 243, 173, 1) 0%,
+    rgba(202, 233, 245, 1) 100%
+  );
+  z-index: 0; /* Behind everything */
+}
+
+.main-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/fruit-k.png");
+  background-size: 45%;
+  background-position: center;
+  opacity: 0.2; /* Control opacity of the image */
+  z-index: 0; /* Behind content but above the gradient */
+}
+.main-container > * {
+  position: relative;
+  z-index: 1; /* Ensure content is above the background */
+}
+
+@media (max-width: 800px) {
+  .main-container::after {
+    background-size: 100%;
+  }
+}
+.grid-container {
+  font-size: 15px;
+  display: flex;
+  gap: 10px;
+  min-height: 90%;
+}
+
+.pr-opt-map {
+  display: flex;
+  flex-direction: column;
+  font-size: 20px;
+}
+
+#inven-form-existing div {
+  flex-grow: 1;
+}
+#inven-form-existing label {
+  font-size: 20px;
+  padding: 5px;
+}
+#inven-form-existing input {
+  font-size: 15px;
+}
+
+#inven-form-existing section {
+  display: flex;
+  flex-direction: column;
+  transition: all 300ms ease-in-out;
+
+  /* &:hover {
+    flex-grow: 4.3;
+  } */
 }
