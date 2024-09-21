@@ -3,10 +3,10 @@ import { createClient } from "@supabase/supabase-js";
 // import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
-export async function POST(request:any) {
+export async function POST(request: any) {
   const supabase = createClient(
-    process.env.SUPABASE_URL|| "",
-    process.env.SUPABASE_SERVICE_ROLE_KEY||""
+    process.env.SUPABASE_URL || "",
+    process.env.SUPABASE_SERVICE_ROLE_KEY || ""
   );
   try {
     // Parse the request body
@@ -23,7 +23,7 @@ export async function POST(request:any) {
     if (error) {
       return NextResponse.json(
         { error: "Error fetching admin data or user is not an admin" },
-        { status: 400 }
+        { status: 400, headers: { "Access-Control-Allow-Origin": "*" } }
       );
     }
 
@@ -31,19 +31,33 @@ export async function POST(request:any) {
     if (data) {
       return NextResponse.json(
         { success: "You are an admin" },
-        { status: 200 }
+        {
+          status: 200,
+          headers: {
+            "Access-Control-Allow-Origin": process.env.REDIRECT!,
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+          },
+        }
       );
     }
 
     return NextResponse.json(
       { failure: "User is not an admin" },
-      { status: 404 }
+      {
+        status: 200,
+        headers: {
+          "Access-Control-Allow-Origin": process.env.REDIRECT!,
+          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        },
+      }
     );
   } catch (error) {
     // Handle unexpected errors
     return NextResponse.json(
       { error: "An error occurred while processing the request" },
-      { status: 500 }
+      { status: 500, headers: { "Access-Control-Allow-Origin": "*" } }
     );
   }
 }

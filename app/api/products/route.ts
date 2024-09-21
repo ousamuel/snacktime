@@ -14,13 +14,26 @@ export async function GET() {
       .eq("category", "flower");
 
     if (FlowerError) {
-      return NextResponse.json({ failure: FlowerError });
+      return NextResponse.json(
+        { failure: FlowerError },
+        { status: 400, headers: { "Access-Control-Allow-Origin": "*" } }
+      );
     }
 
     return NextResponse.json({ flowerData: FlowerData }, { status: 201 });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: error }, { status: 500 });
+    return NextResponse.json(
+      { error: error },
+      {
+        status: 500,
+        headers: {
+          "Access-Control-Allow-Origin": process.env.REDIRECT!,
+          "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        },
+      }
+    );
   }
 }
 export async function PATCH(request: Request) {
@@ -34,10 +47,26 @@ export async function PATCH(request: Request) {
       .from("products")
       .update(formData)
       .eq("id", formData.id);
-    return NextResponse.json({ data: formData }, { status: 201 });
+    return NextResponse.json(
+      { data: formData },
+      {
+        status: 201,
+        headers: {
+          "Access-Control-Allow-Origin": process.env.REDIRECT!,
+          "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        },
+      }
+    );
   } catch (error) {
     console.error(error);
 
-    return NextResponse.json({ error: "An error occurred" }, { status: 500 });
+    return NextResponse.json(
+      { error: "An error occurred" },
+      {
+        status: 500,
+        headers: { "Access-Control-Allow-Origin": "*" },
+      }
+    );
   }
 }
