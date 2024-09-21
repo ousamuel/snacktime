@@ -3,8 +3,8 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const supabase = createClient(
-      process.env.SUPABASE_URL || "",
-      process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
     // flower, vape, concentrate, edible
     // Insert the support ticket

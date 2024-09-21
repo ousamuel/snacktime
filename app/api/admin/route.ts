@@ -10,8 +10,8 @@ export async function POST(request: any) {
   );
   try {
     // Parse the request body
-    const { userId, error: userIdError } = await request.json();
-    if (userIdError) {
+    const { userId } = await request.json();
+    if (!userId) {
       return NextResponse.json(
         { error: "FAILED TO GET USERID" },
         { status: 404, headers: { "Access-Control-Allow-Origin": "*" } }
