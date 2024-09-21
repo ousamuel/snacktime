@@ -17,6 +17,7 @@ export async function POST(request: any) {
         { status: 404, headers: { "Access-Control-Allow-Origin": "*" } }
       );
     }
+    
     // Query the 'admins' table to check if the user exists
     const { data, error } = await supabase
       .from("admins")
