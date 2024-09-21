@@ -91,6 +91,7 @@ const PricingForm: React.FC<PricingFormProps> = ({
                 <option value="ounces">ounce(s)</option>
                 <option value="pounds">pound(s)</option>
                 <option value="units">unit(s)</option>
+                <option value="boxes">units per box</option>
               </select>
             </div>
             <div className="flex flex-col gap-2">

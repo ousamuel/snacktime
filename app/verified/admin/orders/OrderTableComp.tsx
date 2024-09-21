@@ -71,37 +71,18 @@ import { RootState } from "@/lib/store";
 
 const columns: ColumnDef<unknown, any>[] = [
   {
-    accessorKey: "name",
+    accessorKey: "product_name",
     header: ({ column }) => (
       <Button
         variant="ghost"
         className="pl-0"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Name
+        Product Name
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => <div>{row.getValue("name")}</div>,
-  },
-  {
-    accessorKey: "description",
-    header: "Description",
-    cell: ({ row }) => <div>{row.getValue("description")}</div>,
-  },
-  {
-    accessorKey: "strain",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        className="pl-0"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Strain
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => <div>{row.getValue("strain") ?? "N/A"}</div>,
+    cell: ({ row }) => <div>{row.getValue("product_name")}</div>,
   },
   {
     accessorKey: "last_updated",
@@ -120,8 +101,13 @@ const columns: ColumnDef<unknown, any>[] = [
     },
   },
   {
+    accessorKey: "customer_name",
+    header: "Customer Name",
+    cell: ({ row }) => <div>{row.getValue("customer_name")}</div>,
+  },
+  {
     accessorKey: "created_at",
-    header: "Created At",
+    header: "Date",
     cell: ({ row }) => {
       const createdAt = new Date(row.getValue("created_at"));
       return (
@@ -143,20 +129,9 @@ const columns: ColumnDef<unknown, any>[] = [
       return pricing ? `$${pricing.toFixed(2)}` : "N/A";
     },
   },
-  {
-    accessorKey: "in_stock",
-    header: "In stock",
-    cell: ({ row }) => (
-      <div
-        className={row.getValue("in_stock") ? "text-green-600" : "text-red-600"}
-      >
-        {row.getValue("in_stock") ? "Yes" : "No"}
-      </div>
-    ),
-  },
 ];
 
-export default function TableComp({ product }: { product: string }) {
+export default function OrderTableComp() {
   const router = useRouter();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -172,12 +147,11 @@ export default function TableComp({ product }: { product: string }) {
   const [csvData, setCsvData] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
-    id:"",
+    id: "",
     name: "",
     description: "",
     strain: "", // Default strain value
     in_stock: "",
-    category: "",
     pricing_options: [],
     supplier: "",
 
@@ -189,7 +163,7 @@ export default function TableComp({ product }: { product: string }) {
 
   useEffect(() => {
     // sessionStorage.clear();
-    const fetchUserAndFlower = async () => {
+    const fetchUserAndOrders = async () => {
       const supabase = createClient();
       if (!user) {
         router.push("/");
@@ -197,38 +171,34 @@ export default function TableComp({ product }: { product: string }) {
         router.push("/verified");
       }
 
-      const savedData = sessionStorage.getItem(product);
+      const savedData = sessionStorage.getItem("orders");
       if (savedData && JSON.parse(savedData).length > 0) {
         const parsedData = JSON.parse(savedData);
         setData(parsedData);
         return;
       }
 
-      const { data, error: fetchProductError } = await supabase
-        .from("products")
-        .select()
-        .filter(
-          "category",
-          product.toLowerCase() === "flower" ? "eq" : "neq",
-          product.toLowerCase()
-        );
+      const { data, error: fetchOrdersError } = await supabase
+        .from("orders")
+        .select();
 
       if (data) {
         const jsonString = JSON.stringify(data);
         const sizeInBytes = new TextEncoder().encode(jsonString).length;
         const sizeInMB = sizeInBytes / (1024 * 1024);
         if (sizeInMB <= 2.5) {
-          sessionStorage.setItem(product, JSON.stringify(data));
+          sessionStorage.setItem("orders", JSON.stringify(data));
         }
+        console.log(sessionStorage);
       }
-      if (fetchProductError) {
-        console.warn(fetchProductError);
+      if (fetchOrdersError) {
+        console.warn(fetchOrdersError);
       } else {
         console.log(data);
         setData(data);
       }
     };
-    fetchUserAndFlower();
+    fetchUserAndOrders();
   }, []);
   const table = useReactTable({
     data,
@@ -248,22 +218,22 @@ export default function TableComp({ product }: { product: string }) {
       rowSelection,
     },
   });
-  const handleProductSubmit = async (e: any) => {
+  const handleOrderSubmit = async (e: any) => {
     e.preventDefault();
     if (formData.pricing_options.some((option: any) => option.cost == "")) {
       return { error: "All pricing options must have a cost" };
     }
     try {
-      const res = await fetch("/api/products", {
+      const res = await fetch("/api/orders", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body:JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
       const data = await res.json();
       if (res.ok) {
-        console.log(data)
+        // console.log(data);
       } else {
         console.error("Failed to fetch products");
       }
@@ -304,7 +274,6 @@ export default function TableComp({ product }: { product: string }) {
       description: "",
       strain: "", // Default strain value
       in_stock: "",
-      category: "",
       pricing_options: [],
       supplier: "",
     });
@@ -320,7 +289,6 @@ export default function TableComp({ product }: { product: string }) {
       description: rowData.description,
       strain: rowData.strain,
       in_stock: rowData.in_stock,
-      category: rowData.category,
       pricing_options: rowData.pricing_options,
       supplier: rowData.supplier || "",
     });
@@ -343,7 +311,7 @@ export default function TableComp({ product }: { product: string }) {
       <div className="flex justify-between py-4">
         <section>
           <h2 className="scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-            Inventory: Flower
+            Orders
           </h2>
           <Input
             placeholder="Filter by name..."
@@ -353,20 +321,19 @@ export default function TableComp({ product }: { product: string }) {
             }
             className="max-w-sm ring-0"
           />
-          <div className="flex flex-col gap-2">
+          {/* <div className="flex flex-col gap-2">
             <RadioGroup
               value={selectedValue} // Controlled value for selected radio
               className="gap-0"
               onValueChange={(value) => {
                 setSelectedValue(value); // Update the state to track the selected radio button
-                table.getColumn("strain")?.setFilterValue(value); // Apply filtering based on the selected value
+                table.getColumn("category")?.setFilterValue(value); // Apply filtering based on the selected value
               }}
             >
               {[
                 { label: "All", value: "" },
-                { label: "Sativa", value: "sativa" },
-                { label: "Indica", value: "indica" },
-                { label: "Hybrid", value: "hybrid" },
+                { label: "Flower", value: "flower" },
+                { label: "Condiments", value: "condiments" },
               ].map((strain) => (
                 <div
                   key={strain.label}
@@ -384,7 +351,7 @@ export default function TableComp({ product }: { product: string }) {
                 </div>
               ))}
             </RadioGroup>
-          </div>
+          </div> */}
         </section>
         <section className="flex flex-col gap-2">
           <Dialog>
@@ -395,10 +362,10 @@ export default function TableComp({ product }: { product: string }) {
             </DialogTrigger>
             <DialogContent className="max-w-full w-5/6 max-h-[calc(100vh-100px)] overflow-y-scroll">
               <DialogTitle asChild>
-                <h1 className="text-2xl font-medium">Add New Item</h1>
+                <h1 className="text-2xl font-medium">Add New Order</h1>
               </DialogTitle>
               <form
-                onSubmit={handleProductSubmit}
+                onSubmit={handleOrderSubmit}
                 className="flex flex-col w-full p-4 gap-2 [&>input]:mb-4 text-foreground"
               >
                 <div className="flex flex-col gap-3">
@@ -613,7 +580,7 @@ export default function TableComp({ product }: { product: string }) {
                         <option value="hybrid">Hybrid</option>
                       </select>
                     </section>
-                    <section>
+                    {/* <section>
                       <Label htmlFor="category">Category</Label>
                       <select
                         name="category"
@@ -627,7 +594,7 @@ export default function TableComp({ product }: { product: string }) {
                         <option value="vape">Vape</option>
                         <option value="concentrate">Concentrate</option>
                       </select>
-                    </section>
+                    </section> */}
                     <section className="flex flex-col h-full">
                       <Label htmlFor="description">Description</Label>
                       <textarea
@@ -663,7 +630,7 @@ export default function TableComp({ product }: { product: string }) {
                 Cancel
               </Button>
             </DrawerClose>
-            <Button onClick={handleProductSubmit} className="flex-1">
+            <Button onClick={handleOrderSubmit} className="flex-1">
               Save
             </Button>
           </DrawerFooter>
@@ -672,7 +639,7 @@ export default function TableComp({ product }: { product: string }) {
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {table.getFilteredRowModel().rows.length} row(s).
         </div>
         <div className="space-x-2">
           <Button
@@ -696,5 +663,3 @@ export default function TableComp({ product }: { product: string }) {
     </main>
   );
 }
-
-

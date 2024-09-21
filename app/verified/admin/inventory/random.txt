@@ -1,0 +1,89 @@
+Green mountain extracts
+1G - 25
+8th 4th, Hfs, Q
+
+
+
+Disposables
+Singles
+10+
+25+
+
+Rosin
+Single
+3+
+Box of 10
+Box of 50
+
+Mix and Match
+
+
+
+
+
+high tek 250mg infused syrup
+
+singles: 30
+4+ =  25 ea
+35+ = 15 ea
+Box of 70+ = 12 ea 
+3 box + = 10ea
+
+
+
+random product
+weight prices
+1/8: 40
+1/4: 70
+1/2: 110
+--> what if user wants 2 (1/2)s?
+
+
+unit prices
+singles: 60
+4+: 50
+10+ : 40
+50+: 30
+
+box prices
+
+
+
+
+Prerolls (read only)
+(2+, 10+, 50+, 100+)
+- single units
+- pricing options are visible but not interactable
+- user just has to specify how many they want
+- i will handle logic to determine price
+
+Flower (radiogroup)
+o 1/8
+o 1/4
+o 1/2
+o 1
+input: (integer)
+
+
+
+Condiments (read only)
+Single
+4+
+10+
+15+
+
+input: (integer) , select: (unit, box of 10, box of 50)
+
+
+[
+  {
+    "8th": 0
+    "Q": 0,
+    "1/2": 0,
+    "Zip":0,
+    "QP": 0,
+    "HP": 0,
+    "P":0,
+  },
+  
+]

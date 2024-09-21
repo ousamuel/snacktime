@@ -11,7 +11,7 @@ import { Dispatch } from "@reduxjs/toolkit";
 import { addToCart } from "@/lib/reducers/cartReducer";
 
 export default function VerifiedHome() {
-  const [flowerProducts, setFlowerProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<any>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const cacheExpiryTime = 3600000 * 2;
   //  3600000 = 1 hour
@@ -27,7 +27,7 @@ export default function VerifiedHome() {
   }, []);
   const getProducts = async () => {
     // localStorage.clear();
-    const cachedData = localStorage.getItem("flowerProducts");
+    const cachedData = localStorage.getItem("products");
 
     if (cachedData) {
       const { data, timestamp } = JSON.parse(cachedData);
@@ -35,7 +35,7 @@ export default function VerifiedHome() {
       const now = Date.now();
       if (now - timestamp < cacheExpiryTime) {
         // Use cached data if it's not expired
-        setFlowerProducts(data);
+        setProducts(data);
         setLoading(false);
         return;
       }
@@ -45,7 +45,6 @@ export default function VerifiedHome() {
   };
 
   const fetchProductsFromAPI = async () => {
-    console.log("fetchProductsFromAPI");
     try {
       const res = await fetch("/api/products", {
         method: "GET",
@@ -55,14 +54,10 @@ export default function VerifiedHome() {
       });
       const data = await res.json();
       if (res.ok) {
-        console.log(data);
-        setFlowerProducts(data.flowerData);
+        setProducts(data.data);
         // Store data in localStorage with a timestamp
         const timestamp = Date.now();
-        localStorage.setItem(
-          "flowerProducts",
-          JSON.stringify({ data: data.flowerData, timestamp })
-        );
+        localStorage.setItem("products", JSON.stringify({ data, timestamp }));
         setLoading(false);
       } else {
         console.error("Failed to fetch products");
@@ -75,29 +70,30 @@ export default function VerifiedHome() {
   // if (loading) return <div>Loading...</div>;
   return (
     <ContentLayout title="Home">
-      <main className="flex flex-col gap-4 pr-0">
-        <section className="flex flex-col">
+      <main className="flex flex-col gap-4 pr-0 h-full">
+        <section className="flex flex-col gap-2">
           <h2 className="text-black text-center scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0">
             Flower
           </h2>
-          <div className="flex gap-3 overflow-x-scroll pr-6">
-            {flowerProducts.map((flowerProduct, i: number) => (
-              <ProductCard key={i} className="">
-                <img className="card rounded-md" src="/flowa.jpg" />
-                <ProductCardFooter className="flex flex-col p-2">
-                  <p>{flowerProduct.name}</p>
-                  <p>Product Farm</p>
-                  <Button
-                    className=""
-                    onClick={() => {
-                      handleAddToCart(flowerProduct);
-                    }}
-                  >
-                    Add to cart
-                  </Button>
-                </ProductCardFooter>
-              </ProductCard>
-            ))}
+          <div className="flex gap-x-3 pr-6 overflow-auto items-stretch">
+            {products.data &&
+              products.data.map((product: any, i: number) => (
+                <ProductCard key={i} className="">
+                  <img className="card rounded-md" src="/flowa.jpg" />
+                  <ProductCardFooter className="flex flex-col p-2">
+                    <p>{product.name}</p>
+                    <p>{product.supplier && product.supplier}</p>
+                    <Button
+                      className=""
+                      onClick={() => {
+                        handleAddToCart(product);
+                      }}
+                    >
+                      Add to cart
+                    </Button>
+                  </ProductCardFooter>
+                </ProductCard>
+              ))}
             <ProductCard className="bg-accent">
               <div
                 className="rounded-md text-center text-4xl text-gray-500 flex h-full 
@@ -107,6 +103,9 @@ export default function VerifiedHome() {
               </div>
             </ProductCard>
           </div>
+          <h2 className="text-black text-center scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0">
+            Condiments
+          </h2>
         </section>
       </main>
     </ContentLayout>

@@ -1,13 +1,4 @@
-import {
-  Tag,
-  Users,
-  Settings,
-  Bookmark,
-  SquarePen,
-  LayoutGrid,
-  LucideIcon,
-  Archive,
-} from "lucide-react";
+import { ClipboardList, LucideIcon, Archive, Receipt } from "lucide-react";
 
 type Submenu = {
   href: string;
@@ -36,7 +27,7 @@ export function getAdminList(pathname: string): Group[] {
         {
           href: "/verified/admin/inventory",
           label: "Inventory",
-          active: pathname === "/verified/admin/inventory",
+          active: pathname === "/verified/admin/inventory/nothing",
           icon: Archive,
           submenus: [
             {
@@ -49,11 +40,42 @@ export function getAdminList(pathname: string): Group[] {
               label: "Condiments",
               active: pathname.includes("/admin/inventory/condiments"),
             },
-            // {
-            //   href: "/posts/new",
-            //   label: "New Post",
-            //   active: pathname === "/posts/new",
-            // },
+          ],
+        },
+        {
+          href: "/verified/admin/orders",
+          label: "Orders",
+          active: pathname === "/verified/admin/orders/nothing",
+          icon: ClipboardList,
+          submenus: [
+            {
+              href: "/verified/admin/orders/history",
+              label: "History",
+              active: pathname.includes("/admin/orders/history"),
+            },
+            {
+              href: "/verified/admin/orders/new-order",
+              label: "New Order",
+              active: pathname.includes("/admin/orders/new-order"),
+            },
+          ],
+        },
+        {
+          href: "/verified/admin/pricing",
+          label: "Pricing",
+          active: pathname === "/verified/admin/pricing/nothing",
+          icon: Receipt,
+          submenus: [
+            {
+              href: "/verified/admin/pricing/flower",
+              label: "Flower",
+              active: pathname.includes("/admin/pricing/flower"),
+            },
+            {
+              href: "/verified/admin/pricing/condiments",
+              label: "Condiments",
+              active: pathname.includes("/admin/pricing/condiments"),
+            },
           ],
         },
       ],

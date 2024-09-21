@@ -10,7 +10,7 @@ const ProductCard = React.forwardRef<
     ref={ref}
     className={cn(
       `rounded-xl border bg-card text-card-foreground shadow 
-      min-w-[150px] max-w-[150px] h-[280px] lg:w-[240px] lg:max-w-[240px] lg:h-[400px]`,
+      min-w-[150px] max-w-[150px]  lg:w-[240px] lg:max-w-[240px] lg:h-[400px]`,
       className
     )}
     {...props}
