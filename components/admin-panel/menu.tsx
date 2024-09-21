@@ -44,6 +44,11 @@ export function Menu({ isOpen }: MenuProps) {
 
   // storing user data and admin check into redux store
   const dispatch = useDispatch();
+  useEffect(() => {
+    if (!user) {
+      dispatch(fetchUserAndCheckAdmin());
+    }
+  }, [dispatch]);
   const fetchUserAndCheckAdmin = (): any => {
     return async (dispatch: Dispatch) => {
       try {
@@ -78,15 +83,10 @@ export function Menu({ isOpen }: MenuProps) {
         signOutAction();
       } finally {
         dispatch(setLoading(false)); // Stop loading
-        // router.push("/verified/home");
+        router.push("/verified/home");
       }
     };
   };
-  useEffect(() => {
-    if (!user) {
-      dispatch(fetchUserAndCheckAdmin());
-    }
-  }, [dispatch]);
 
   return (
     <ScrollArea className="[&>div>div[style]]:!block h-full">

@@ -5,13 +5,18 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: any) {
   const supabase = createClient(
-    process.env.SUPABASE_URL || "",
-    process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
   try {
     // Parse the request body
-    const { userId } = await request.json();
-
+    const { userId, error: userIdError } = await request.json();
+    if (userIdError) {
+      return NextResponse.json(
+        { error: "FAILED TO GET USERID" },
+        { status: 404, headers: { "Access-Control-Allow-Origin": "*" } }
+      );
+    }
     // Query the 'admins' table to check if the user exists
     const { data, error } = await supabase
       .from("admins")
