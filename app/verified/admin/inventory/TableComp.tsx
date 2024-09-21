@@ -188,7 +188,7 @@ export default function TableComp({ product }: { product: string }) {
   );
 
   useEffect(() => {
-    sessionStorage.clear();
+    // sessionStorage.clear();
     const fetchUserAndFlower = async () => {
       const supabase = createClient();
       if (!user) {

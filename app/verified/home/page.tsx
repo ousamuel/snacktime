@@ -28,8 +28,10 @@ export default function VerifiedHome() {
   const getProducts = async () => {
     // localStorage.clear();
     const cachedData = localStorage.getItem("flowerProducts");
+
     if (cachedData) {
       const { data, timestamp } = JSON.parse(cachedData);
+      console.log(data);
       const now = Date.now();
       if (now - timestamp < cacheExpiryTime) {
         // Use cached data if it's not expired
@@ -42,6 +44,7 @@ export default function VerifiedHome() {
     fetchProductsFromAPI();
   };
   const fetchProductsFromAPI = async () => {
+    console.log("fetchProductsFromAPI");
     try {
       const res = await fetch("/api/products", {
         method: "GET",

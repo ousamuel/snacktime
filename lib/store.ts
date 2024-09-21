@@ -5,9 +5,12 @@ import userReducer from "./reducers/userReducer";
 // Function to load state from localStorage
 const loadState = () => {
   try {
+    if (typeof window === "undefined") {
+      return undefined; // We're on the server, no access to localStorage
+    }
     const serializedState = localStorage.getItem("reduxState");
     if (serializedState === null) {
-      return undefined; // Let the reducers initialize the state
+      return undefined; // No saved state
     }
     return JSON.parse(serializedState);
   } catch (err) {
@@ -19,6 +22,9 @@ const loadState = () => {
 // Function to save state to localStorage
 const saveState = (state: RootState) => {
   try {
+    if (typeof window === "undefined") {
+      return; // Don't try to save state on the server
+    }
     const serializedState = JSON.stringify(state);
     localStorage.setItem("reduxState", serializedState);
   } catch (err) {
@@ -33,18 +39,21 @@ const rootReducer = combineReducers({
 });
 
 // Load the persisted state from localStorage
-const preloadedState = loadState();
+const preloadedState = typeof window !== "undefined" ? loadState() : undefined;
 
-// Create the store, preloading the state
+// Create the store
 export const makeStore = () => {
   const store = configureStore({
     reducer: rootReducer,
-    preloadedState, // Preload the store with localStorage data if it exists
+    preloadedState, // Preload with localStorage state if we're on the client
   });
-  // Subscribe to the store, saving the state to localStorage on changes
-  store.subscribe(() => {
-    saveState(store.getState());
-  });
+
+  // Subscribe to the store and save state to localStorage when it changes (only on the client)
+  if (typeof window !== "undefined") {
+    store.subscribe(() => {
+      saveState(store.getState());
+    });
+  }
 
   return store;
 };
