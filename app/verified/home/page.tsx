@@ -44,6 +44,7 @@ export default function VerifiedHome() {
     // Fetch new data if no valid cache is found
     fetchProductsFromAPI();
   };
+  
   const fetchProductsFromAPI = async () => {
     console.log("fetchProductsFromAPI");
     try {

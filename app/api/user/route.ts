@@ -14,8 +14,24 @@ export async function POST() {
   } = await supabase.auth.getUser();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json(
+      { error: error.message },
+      {
+        status: 400,
+        headers: { "Access-Control-Allow-Origin": "*" },
+      }
+    );
   }
 
-  return NextResponse.json({ user }, { status: 200 });
+  return NextResponse.json(
+    { user },
+    {
+      status: 200,
+      headers: {
+        "Access-Control-Allow-Origin": process.env.REDIRECT!,
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      },
+    }
+  );
 }
