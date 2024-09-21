@@ -78,7 +78,7 @@ export function Menu({ isOpen }: MenuProps) {
         signOutAction();
       } finally {
         dispatch(setLoading(false)); // Stop loading
-        router.push("/verified/home");
+        // router.push("/verified/home");
       }
     };
   };

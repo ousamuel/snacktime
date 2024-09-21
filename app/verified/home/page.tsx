@@ -23,7 +23,6 @@ export default function VerifiedHome() {
   };
 
   useEffect(() => {
-    localStorage.clear();
     getProducts();
   }, []);
   const getProducts = async () => {
@@ -44,7 +43,7 @@ export default function VerifiedHome() {
     // Fetch new data if no valid cache is found
     fetchProductsFromAPI();
   };
-  
+
   const fetchProductsFromAPI = async () => {
     console.log("fetchProductsFromAPI");
     try {

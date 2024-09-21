@@ -48,7 +48,7 @@ export async function PATCH(request: Request) {
       .update(formData)
       .eq("id", formData.id);
     return NextResponse.json(
-      { data: formData },
+      { data },
       {
         status: 201,
         headers: {
