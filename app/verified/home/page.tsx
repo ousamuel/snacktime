@@ -23,6 +23,7 @@ export default function VerifiedHome() {
   };
 
   useEffect(() => {
+    localStorage.clear();
     getProducts();
   }, []);
   const getProducts = async () => {
@@ -54,6 +55,7 @@ export default function VerifiedHome() {
       });
       const data = await res.json();
       if (res.ok) {
+        console.log(data);
         setFlowerProducts(data.flowerData);
         // Store data in localStorage with a timestamp
         const timestamp = Date.now();

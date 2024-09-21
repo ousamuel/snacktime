@@ -1,6 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-
 export async function GET() {
   try {
     const supabase = createClient(
@@ -15,16 +14,16 @@ export async function GET() {
       .eq("category", "flower");
 
     if (FlowerError) {
-      return NextResponse.json({ failure: "no flowers" });
+      return NextResponse.json({ failure: FlowerError });
     }
 
     return NextResponse.json({ flowerData: FlowerData }, { status: 201 });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ error: "An error occurred" }, { status: 500 });
+    return NextResponse.json({ error: error }, { status: 500 });
   }
 }
-export async function PATCH(request: any) {
+export async function PATCH(request: Request) {
   try {
     const formData = await request.json();
     const supabase = createClient(
