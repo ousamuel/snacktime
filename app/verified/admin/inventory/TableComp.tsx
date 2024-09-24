@@ -102,7 +102,29 @@ export default function TableComp({ product }: { product: string }) {
       ),
       cell: ({ row }) => <div>{row.getValue("name")}</div>,
     },
+    {
+      accessorKey: "category",
+      header: "Category",
+      cell: ({ row }: { row: any }) => (
+        <div
+          className={`px-2 py-1 rounded text-white text-xs ${
+            row.getValue("category").toLowerCase() === "flower"
+              ? "bg-green-500"
+              : row.getValue("category").toLowerCase() === "vape"
+                ? "bg-blue-500"
+                : row.getValue("category").toLowerCase() === "concentrate"
+                  ? "bg-orange-500"
+                  : row.getValue("category").toLowerCase() === "edible"
+                    ? "bg-purple-500"
+                    : "bg-gray-500"
+          }`}
+        >
+          {row.getValue("category").toUpperCase()}
+        </div>
+      ),
+    },
     ...generatePricingColumns(),
+
     {
       accessorKey: "weight_in_stock",
       header: "Stock (lbs)",
@@ -118,6 +140,7 @@ export default function TableComp({ product }: { product: string }) {
       header: "Sold (lbs)",
       cell: ({ row }) => <div>{row.getValue("total_lb_sold")}</div>,
     },
+
     // {
     //   accessorKey: "description",
     //   header: "Description",
@@ -198,9 +221,6 @@ export default function TableComp({ product }: { product: string }) {
   const [selectedValue, setSelectedValue] = useState<string>("");
   const [openRowDrawer, setOpenRowDrawer] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<any>({});
-  const [selectedPricingOptions, setSelectedPricingOptions] = useState<any[]>(
-    []
-  );
   const [csvData, setCsvData] = useState<any[]>([]);
 
   const [formData, setFormData] = useState<any>({
@@ -213,13 +233,13 @@ export default function TableComp({ product }: { product: string }) {
     qp: null,
     hp: null,
     p: null,
+    category: null,
     weight_in_stock: 0,
     total_order_count: 0,
     total_lb_sold: 0,
     // description: null,
     // strain: null,
     // in_stock: null,
-    // category: null,
     // supplier: null,
 
     // Add other form fields here if needed
@@ -228,51 +248,47 @@ export default function TableComp({ product }: { product: string }) {
     (state: RootState) => state.user
   );
 
+  const fetchUserAndFlower = async () => {
+    const supabase = createClient();
+    if (!user) {
+      router.push("/");
+    } else if (!secureAccess) {
+      router.push("/verified");
+    }
+
+    sessionStorage.clear();
+
+    // probably need to configure a manual reload to allow admin to request that the
+    // data be refetched ("reload button")
+    // otherwise no point because if multiple admin users make changes, changes wont reflect
+    // const savedData = sessionStorage.getItem(product);
+    // if (savedData && JSON.parse(savedData).length > 0) {
+    //   const parsedData = JSON.parse(savedData);
+    //   setData(parsedData);
+    //   return;
+    // }
+
+    const { data, error: fetchProductError } = await supabase
+      .from("products")
+      .select()
+      .filter("category", product === "flower" ? "eq" : "neq", "flower");
+    console.log(data);
+    if (data) {
+      const jsonString = JSON.stringify(data);
+      const sizeInBytes = new TextEncoder().encode(jsonString).length;
+      const sizeInMB = sizeInBytes / (1024 * 1024);
+      if (sizeInMB <= 2.5) {
+        sessionStorage.setItem(product, JSON.stringify(data));
+      }
+    }
+    if (fetchProductError) {
+      console.warn(fetchProductError);
+    } else {
+      console.log(data);
+      setData(data);
+    }
+  };
   useEffect(() => {
-    const fetchUserAndFlower = async () => {
-      const supabase = createClient();
-      if (!user) {
-        router.push("/");
-      } else if (!secureAccess) {
-        router.push("/verified");
-      }
-
-      sessionStorage.clear();
-
-      // probably need to configure a manual reload to allow admin to request that the
-      // data be refetched ("reload button")
-      // otherwise no point because if multiple admin users make changes, changes wont reflect
-      // const savedData = sessionStorage.getItem(product);
-      // if (savedData && JSON.parse(savedData).length > 0) {
-      //   const parsedData = JSON.parse(savedData);
-      //   setData(parsedData);
-      //   return;
-      // }
-
-      const { data, error: fetchProductError } = await supabase
-        .from("products")
-        .select()
-        .filter(
-          "category",
-          product.toLowerCase() === "flower" ? "eq" : "neq",
-          product.toLowerCase()
-        );
-
-      if (data) {
-        const jsonString = JSON.stringify(data);
-        const sizeInBytes = new TextEncoder().encode(jsonString).length;
-        const sizeInMB = sizeInBytes / (1024 * 1024);
-        if (sizeInMB <= 2.5) {
-          sessionStorage.setItem(product, JSON.stringify(data));
-        }
-      }
-      if (fetchProductError) {
-        console.warn(fetchProductError);
-      } else {
-        console.log(data);
-        setData(data);
-      }
-    };
     fetchUserAndFlower();
   }, []);
   const table = useReactTable({
@@ -296,9 +312,8 @@ export default function TableComp({ product }: { product: string }) {
   const handleProductSubmit = async (e: any) => {
     e.preventDefault();
     if (!formData.id) {
-       delete formData["id"];
+      delete formData["id"];
     }
-    console.log(formData)
     try {
       const res = await fetch("/api/products", {
         method: formData.id ? "PATCH" : "POST",
@@ -309,6 +324,9 @@ export default function TableComp({ product }: { product: string }) {
       });
       const data = await res.json();
       if (res.ok) {
+        fetchUserAndFlower();
+        clearFormData();
+        setOpenRowDrawer(false);
         console.log(data);
       } else {
         console.error("Failed to fetch products");
@@ -354,6 +372,7 @@ export default function TableComp({ product }: { product: string }) {
       qp: null,
       hp: null,
       p: null,
+      category: null,
       weight_in_stock: 0,
       total_order_count: 0,
       total_lb_sold: 0,
@@ -366,7 +385,7 @@ export default function TableComp({ product }: { product: string }) {
       // description: rowData.description,
       // strain: rowData.strain,
       // in_stock: rowData.in_stock,
-      // category: rowData.category,
+      category: rowData.category,
       // pricing_options: rowData.pricing_options,
       // supplier: rowData.supplier || "",
       eighth: rowData.eighth,
@@ -398,7 +417,7 @@ export default function TableComp({ product }: { product: string }) {
       <div className="flex justify-between py-4">
         <section>
           <h2 className="scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-            Inventory: Flower
+            Inventory: {product.toUpperCase()}
           </h2>
           <Input
             placeholder="Filter by name..."
@@ -644,6 +663,33 @@ export default function TableComp({ product }: { product: string }) {
                     const columnValue = selectedRow[columnKey]; // Fetch the corresponding row data
 
                     // Generate inputs dynamically for editable fields
+                    if (columnKey == "category") {
+                      return (
+                        <div
+                          key={columnKey}
+                          className="flex flex-col justify-between"
+                        >
+                          <Label
+                            htmlFor="category"
+                            className="text-gray-700 text-sm lg:text-lg pr-4 pl-1"
+                          >
+                            Category
+                          </Label>
+                          <select
+                            name="category"
+                            required
+                            defaultValue={columnValue || ""}
+                            onChange={handleFormValueChange}
+                            className="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2 h-10 rounded-md bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible: focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <option value="flower">Flower</option>
+                            <option value="edible">Edible</option>
+                            <option value="vape">Vape</option>
+                            <option value="concentrate">Concentrate</option>
+                          </select>
+                        </div>
+                      );
+                    }
                     return (
                       <div
                         key={columnKey}
@@ -652,7 +698,7 @@ export default function TableComp({ product }: { product: string }) {
                         {/* Label for the input */}
                         <Label
                           htmlFor={columnKey}
-                          className="text-gray-700 text-sm lg:text-lg"
+                          className="text-gray-700 text-sm lg:text-md pl-1"
                         >
                           {column.header}
                         </Label>
