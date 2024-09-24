@@ -69,94 +69,126 @@ import Papa from "papaparse";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 
-const columns: ColumnDef<unknown, any>[] = [
-  {
-    accessorKey: "name",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        className="pl-0"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Name
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => <div>{row.getValue("name")}</div>,
-  },
-  {
-    accessorKey: "description",
-    header: "Description",
-    cell: ({ row }) => <div>{row.getValue("description")}</div>,
-  },
-  {
-    accessorKey: "strain",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        className="pl-0"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Strain
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => <div>{row.getValue("strain") ?? "N/A"}</div>,
-  },
-  {
-    accessorKey: "last_updated",
-    header: "Last Updated",
-    cell: ({ row }) => {
-      const lastUpdated = new Date(row.getValue("last_updated"));
-      return (
-        <div>
-          {lastUpdated.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "numeric",
-            day: "numeric",
-          })}
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "created_at",
-    header: "Created At",
-    cell: ({ row }) => {
-      const createdAt = new Date(row.getValue("created_at"));
-      return (
-        <div>
-          {createdAt.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "numeric",
-            day: "numeric",
-          })}
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "pricing", // If you have pricing data
-    header: "Pricing",
-    cell: ({ row }) => {
-      const pricing = parseFloat(row.getValue("pricing"));
-      return pricing ? `$${pricing.toFixed(2)}` : "N/A";
-    },
-  },
-  {
-    accessorKey: "in_stock",
-    header: "In stock",
-    cell: ({ row }) => (
-      <div
-        className={row.getValue("in_stock") ? "text-green-600" : "text-red-600"}
-      >
-        {row.getValue("in_stock") ? "Yes" : "No"}
-      </div>
-    ),
-  },
-];
-
 export default function TableComp({ product }: { product: string }) {
+  const generatePricingColumns = () => {
+    const productPricingOptions: { [key: string]: string[] } = {
+      flower: ["eighth", "q", "half", "oz", "qp", "hp", "p"],
+      condiments: ["Single", "2+", "4+", "10+", "25+", "50+", "100+"],
+      // Add other products here...
+    };
+    const pricingOptions = productPricingOptions[product] || [];
+
+    return pricingOptions.map((key: string) => ({
+      accessorKey: key, // Access nested field
+      header: key == "eighth" ? "8th" : key.toUpperCase(), // Dynamically set header based on key
+      cell: ({ row }: { row: any }) => {
+        const value = row.getValue(key);
+        return value ? value : "- -"; // Adjust based on your data
+      },
+    }));
+  };
+  const columns: ColumnDef<unknown, any>[] = [
+    {
+      accessorKey: "name",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="pl-0"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => <div>{row.getValue("name")}</div>,
+    },
+    ...generatePricingColumns(),
+    {
+      accessorKey: "weight_in_stock",
+      header: "Stock (lbs)",
+      cell: ({ row }) => <div>{row.getValue("weight_in_stock")}</div>,
+    },
+    {
+      accessorKey: "total_order_count",
+      header: "Total Orders",
+      cell: ({ row }) => <div>{row.getValue("total_order_count")}</div>,
+    },
+    {
+      accessorKey: "total_lb_sold",
+      header: "Sold (lbs)",
+      cell: ({ row }) => <div>{row.getValue("total_lb_sold")}</div>,
+    },
+    // {
+    //   accessorKey: "description",
+    //   header: "Description",
+    //   cell: ({ row }) => <div className="">{row.getValue("description")}</div>,
+    // },
+    // {
+    //   accessorKey: "strain",
+    //   header: ({ column }) => (
+    //     <Button
+    //       variant="ghost"
+    //       className="pl-0"
+    //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    //     >
+    //       Strain
+    //       <ArrowUpDown className="ml-2 h-4 w-4" />
+    //     </Button>
+    //   ),
+    //   cell: ({ row }) => <div>{row.getValue("strain") ?? "N/A"}</div>,
+    // },
+    // {
+    //   accessorKey: "last_updated",
+    //   header: "Last Updated",
+    //   cell: ({ row }) => {
+    //     const lastUpdated = new Date(row.getValue("last_updated"));
+    //     return (
+    //       <div>
+    //         {lastUpdated.toLocaleDateString("en-US", {
+    //           year: "numeric",
+    //           month: "numeric",
+    //           day: "numeric",
+    //         })}
+    //       </div>
+    //     );
+    //   },
+    // },
+    // {
+    //   accessorKey: "created_at",
+    //   header: "Created At",
+    //   cell: ({ row }) => {
+    //     const createdAt = new Date(row.getValue("created_at"));
+    //     return (
+    //       <div>
+    //         {createdAt.toLocaleDateString("en-US", {
+    //           year: "numeric",
+    //           month: "numeric",
+    //           day: "numeric",
+    //         })}
+    //       </div>
+    //     );
+    //   },
+    // },
+    // {
+    //   accessorKey: "pricing_options", // If you have pricing data
+    //   header: "Pricing Options",
+    //   cell: ({ row }) => {
+    //     const pricing = row.getValue("pricing_options");
+    //     if (typeof pricing === "object" && pricing !== null) {
+    //       return (
+    //         <div className="min-w-[200px]">
+    //           {Object.entries(pricing).map(([key, value]) => (
+    //             <div key={key}>
+    //               {key}: ${value.toFixed(2)}{" "}
+    //               {/* Adjust based on your pricing data */}
+    //             </div>
+    //           ))}
+    //         </div>
+    //       );
+    //     }
+    //   },
+    // },
+  ];
   const router = useRouter();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -171,15 +203,24 @@ export default function TableComp({ product }: { product: string }) {
   );
   const [csvData, setCsvData] = useState<any[]>([]);
 
-  const [formData, setFormData] = useState({
-    id:"",
-    name: "",
-    description: "",
-    strain: "", // Default strain value
-    in_stock: "",
-    category: "",
-    pricing_options: [],
-    supplier: "",
+  const [formData, setFormData] = useState<any>({
+    id: "",
+    name: null,
+    eighth: null,
+    q: null,
+    half: null,
+    oz: null,
+    qp: null,
+    hp: null,
+    p: null,
+    weight_in_stock: 0,
+    total_order_count: 0,
+    total_lb_sold: 0,
+    // description: null,
+    // strain: null,
+    // in_stock: null,
+    // category: null,
+    // supplier: null,
 
     // Add other form fields here if needed
   });
@@ -188,7 +229,6 @@ export default function TableComp({ product }: { product: string }) {
   );
 
   useEffect(() => {
-    // sessionStorage.clear();
     const fetchUserAndFlower = async () => {
       const supabase = createClient();
       if (!user) {
@@ -197,12 +237,17 @@ export default function TableComp({ product }: { product: string }) {
         router.push("/verified");
       }
 
-      const savedData = sessionStorage.getItem(product);
-      if (savedData && JSON.parse(savedData).length > 0) {
-        const parsedData = JSON.parse(savedData);
-        setData(parsedData);
-        return;
-      }
+      sessionStorage.clear();
+
+      // probably need to configure a manual reload to allow admin to request that the
+      // data be refetched ("reload button")
+      // otherwise no point because if multiple admin users make changes, changes wont reflect
+      // const savedData = sessionStorage.getItem(product);
+      // if (savedData && JSON.parse(savedData).length > 0) {
+      //   const parsedData = JSON.parse(savedData);
+      //   setData(parsedData);
+      //   return;
+      // }
 
       const { data, error: fetchProductError } = await supabase
         .from("products")
@@ -250,20 +295,21 @@ export default function TableComp({ product }: { product: string }) {
   });
   const handleProductSubmit = async (e: any) => {
     e.preventDefault();
-    if (formData.pricing_options.some((option: any) => option.cost == "")) {
-      return { error: "All pricing options must have a cost" };
+    if (!formData.id) {
+       delete formData["id"];
     }
+    console.log(formData)
     try {
       const res = await fetch("/api/products", {
-        method: "PATCH",
+        method: formData.id ? "PATCH" : "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body:JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
       const data = await res.json();
       if (res.ok) {
-        console.log(data)
+        console.log(data);
       } else {
         console.error("Failed to fetch products");
       }
@@ -299,30 +345,40 @@ export default function TableComp({ product }: { product: string }) {
   };
   const clearFormData = () => {
     setFormData({
-      id: "",
-      name: "",
-      description: "",
-      strain: "", // Default strain value
-      in_stock: "",
-      category: "",
-      pricing_options: [],
-      supplier: "",
+      id: null,
+      name: null,
+      eighth: null,
+      q: null,
+      half: null,
+      oz: null,
+      qp: null,
+      hp: null,
+      p: null,
+      weight_in_stock: 0,
+      total_order_count: 0,
+      total_lb_sold: 0,
     });
   };
   const handleOpenDrawer = async (rowData: any) => {
-    console.log(rowData);
-    setSelectedPricingOptions(
-      rowData.pricing_options ? rowData.pricing_options : []
-    );
     setFormData({
       id: rowData.id,
       name: rowData.name,
-      description: rowData.description,
-      strain: rowData.strain,
-      in_stock: rowData.in_stock,
-      category: rowData.category,
-      pricing_options: rowData.pricing_options,
-      supplier: rowData.supplier || "",
+      // description: rowData.description,
+      // strain: rowData.strain,
+      // in_stock: rowData.in_stock,
+      // category: rowData.category,
+      // pricing_options: rowData.pricing_options,
+      // supplier: rowData.supplier || "",
+      eighth: rowData.eighth,
+      q: rowData.q,
+      half: rowData.half,
+      oz: rowData.oz,
+      qp: rowData.qp,
+      hp: rowData.hp,
+      p: rowData.p,
+      weight_in_stock: rowData.weight_in_stock,
+      total_order_count: rowData.total_order_count,
+      total_lb_sold: rowData.total_lb_sold,
     });
     setSelectedRow(rowData);
     setOpenRowDrawer(true);
@@ -332,7 +388,6 @@ export default function TableComp({ product }: { product: string }) {
     if (value <= 1) {
     }
   };
-
   return (
     <main className="pr-6">
       {/* <div>
@@ -387,10 +442,19 @@ export default function TableComp({ product }: { product: string }) {
           </div>
         </section>
         <section className="flex flex-col gap-2">
+          <Button
+            onClick={() => {
+              setOpenRowDrawer(true);
+              setSelectedRow([]);
+            }}
+            className="px-2 h-fit  border border-accent"
+          >
+            Add New
+          </Button>
           <Dialog>
             <DialogTrigger asChild>
               <Button className="px-2 h-fit  border border-accent">
-                Add New
+                dialog trigger
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-full w-5/6 max-h-[calc(100vh-100px)] overflow-y-scroll">
@@ -402,7 +466,7 @@ export default function TableComp({ product }: { product: string }) {
                 className="flex flex-col w-full p-4 gap-2 [&>input]:mb-4 text-foreground"
               >
                 <div className="flex flex-col gap-3">
-                  <div className="flex flex-col gap-2 lg:flex-row">
+                  {/* <div className="flex flex-col gap-2 lg:flex-row">
                     <section className="flex flex-1 flex-col [&>input]:mb-3">
                       <Label htmlFor="name">Product Name</Label>
                       <Input
@@ -446,7 +510,7 @@ export default function TableComp({ product }: { product: string }) {
                         }
                       />
                     </section>
-                  </div>
+                  </div> */}
                   <SubmitButton
                     pendingText="Saving..."
                     formAction={addProductAction}
@@ -557,106 +621,58 @@ export default function TableComp({ product }: { product: string }) {
       <Drawer
         open={openRowDrawer}
         onOpenChange={(open) => {
+          console.log(formData);
           if (!open) {
-            //   setNumberCorrect(0);
             clearFormData();
-            setSelectedPricingOptions([]);
           }
           setOpenRowDrawer(open);
         }}
       >
-        <DrawerContent className=" ">
+        <DrawerContent>
           <DrawerHeader>
-            <form
-              id="inven-form-existing"
-              className="min-h-[70vh] max-h-[70vh] overflow-y-scroll"
-            >
+            <form className="overflow-y-scroll">
               <DrawerTitle asChild>
                 <p className="text-muted-foreground text-sm p-1">
-                  ID: {selectedRow.id}
+                  {/* ID: {selectedRow.id} */}
                 </p>
               </DrawerTitle>
               <DrawerDescription asChild>
-                <div className="grid-container">
-                  <div className="flex flex-col">
-                    <section>
-                      <Label htmlFor="name">Product Name</Label>
-                      <Input
-                        type="text"
-                        name="name"
-                        placeholder="Product Name"
-                        value={formData.name}
-                        onChange={handleFormValueChange}
-                      />
-                    </section>
-                    <section>
-                      <Label htmlFor="supplier">Supplier</Label>
-                      <Input
-                        type="text"
-                        name="supplier"
-                        placeholder="Supplier Name"
-                        value={formData.supplier}
-                        onChange={handleFormValueChange}
-                      />
-                    </section>
-                    <section>
-                      <Label htmlFor="strain">Strain</Label>
-                      <select
-                        name="strain"
-                        required
-                        value={formData.strain.toLowerCase()}
-                        onChange={handleFormValueChange}
-                        className="border rounded p-2"
+                {/* Dynamically create form fields based on the columns */}
+                <form className="flex">
+                  {columns.map((column: any) => {
+                    const columnKey = column.accessorKey;
+                    const columnValue = selectedRow[columnKey]; // Fetch the corresponding row data
+
+                    // Generate inputs dynamically for editable fields
+                    return (
+                      <div
+                        key={columnKey}
+                        className="flex flex-col justify-between"
                       >
-                        <option value="sativa">Sativa</option>
-                        <option value="indica">Indica</option>
-                        <option value="hybrid">Hybrid</option>
-                      </select>
-                    </section>
-                    <section>
-                      <Label htmlFor="category">Category</Label>
-                      <select
-                        name="category"
-                        required
-                        value={formData.category.toLowerCase()}
-                        onChange={handleFormValueChange}
-                        className="border rounded p-2"
-                      >
-                        <option value="flower">Flower</option>
-                        <option value="edible">Edible</option>
-                        <option value="vape">Vape</option>
-                        <option value="concentrate">Concentrate</option>
-                      </select>
-                    </section>
-                    <section className="flex flex-col h-full">
-                      <Label htmlFor="description">Description</Label>
-                      <textarea
-                        name="description"
-                        placeholder="Product Description"
-                        value={formData.description}
-                        onChange={handleFormValueChange}
-                        className="h-full border p-2 rounded-md"
-                      />
-                    </section>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="pricingOptions">Pricing Options</Label>
-                    <div className="flex flex-col gap-2 ">
-                      <PricingForm
-                        pricingOptions={formData.pricing_options}
-                        setPricingOptions={(updatedOptions: any) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            pricing_options: updatedOptions,
-                          }))
-                        }
-                      />
-                    </div>
-                  </div>
-                </div>
+                        {/* Label for the input */}
+                        <Label
+                          htmlFor={columnKey}
+                          className="text-gray-700 text-sm lg:text-lg"
+                        >
+                          {column.header}
+                        </Label>
+                        {/* Input field */}
+                        <Input
+                          type="text"
+                          id={columnKey}
+                          name={columnKey}
+                          defaultValue={columnValue || ""}
+                          className="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2"
+                          onChange={handleFormValueChange}
+                        />
+                      </div>
+                    );
+                  })}
+                </form>
               </DrawerDescription>
             </form>
           </DrawerHeader>
+
           <DrawerFooter className="flex flex-row">
             <DrawerClose onClick={() => setOpenRowDrawer(false)} asChild>
               <Button className="flex-1" variant="outline">
@@ -697,4 +713,80 @@ export default function TableComp({ product }: { product: string }) {
   );
 }
 
-
+// <div className="grid-container">
+//                   <div className="flex flex-col">
+//                     <section>
+//                       <Label htmlFor="name">Product Name</Label>
+//                       <Input
+//                         type="text"
+//                         name="name"
+//                         placeholder="Product Name"
+//                         value={formData.name}
+//                         onChange={handleFormValueChange}
+//                       />
+//                     </section>
+//                     <section>
+//                       <Label htmlFor="supplier">Supplier</Label>
+//                       <Input
+//                         type="text"
+//                         name="supplier"
+//                         placeholder="Supplier Name"
+//                         value={formData.supplier}
+//                         onChange={handleFormValueChange}
+//                       />
+//                     </section>
+//                     <section>
+//                       <Label htmlFor="strain">Strain</Label>
+//                       <select
+//                         name="strain"
+//                         required
+//                         value={formData.strain.toLowerCase()}
+//                         onChange={handleFormValueChange}
+//                         className="border rounded p-2"
+//                       >
+//                         <option value="sativa">Sativa</option>
+//                         <option value="indica">Indica</option>
+//                         <option value="hybrid">Hybrid</option>
+//                       </select>
+//                     </section>
+//                     <section>
+//                       <Label htmlFor="category">Category</Label>
+//                       <select
+//                         name="category"
+//                         required
+//                         value={formData.category.toLowerCase()}
+//                         onChange={handleFormValueChange}
+//                         className="border rounded p-2"
+//                       >
+//                         <option value="flower">Flower</option>
+//                         <option value="edible">Edible</option>
+//                         <option value="vape">Vape</option>
+//                         <option value="concentrate">Concentrate</option>
+//                       </select>
+//                     </section>
+//                     <section id="description" className="flex flex-col h-full">
+//                       <Label htmlFor="description">Description</Label>
+//                       <textarea
+//                         name="description"
+//                         placeholder="Product Description"
+//                         value={formData.description}
+//                         onChange={handleFormValueChange}
+//                         className="h-full border p-2 rounded-md"
+//                       />
+//                     </section>
+//                   </div>
+//                   <div className="flex flex-col gap-2">
+//                     <Label htmlFor="pricingOptions">Pricing Options</Label>
+//                     <div className="flex flex-col gap-2 ">
+//                       <PricingForm
+//                         pricingOptions={formData.pricing_options}
+//                         setPricingOptions={(updatedOptions: any) =>
+//                           setFormData((prev) => ({
+//                             ...prev,
+//                             pricing_options: updatedOptions,
+//                           }))
+//                         }
+//                       />
+//                     </div>
+//                   </div>
+//                 </div>

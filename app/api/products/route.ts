@@ -1,11 +1,12 @@
-// import { createClient } from "@supabase/supabase-js";
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 export async function GET() {
   try {
-    const supabase = createClient();
-    // process.env.SUPABASE_URL!,
-    // process.env.SUPABASE_SERVICE_ROLE_KEY!
+    const supabase = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
     // flower, vape, concentrate, edible
     // Insert the support ticket
     const { data, error } = await supabase.from("products").select("*");
@@ -35,12 +36,36 @@ export async function GET() {
     );
   }
 }
+export async function POST(request: Request) {
+  try {
+    const formData = await request.json();
+    const supabase = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const { error } = await supabase.from("products").insert(formData);
+    if (error) {
+      console.log(error);
+      return NextResponse.json({ error: "Error inserting" });
+    }
+    return NextResponse.json({ status: 201, success: "Successful insert" });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "An error occurred" },
+      {
+        status: 500,
+        headers: { "Access-Control-Allow-Origin": "*" },
+      }
+    );
+  }
+}
 export async function PATCH(request: Request) {
   try {
     const formData = await request.json();
-    const supabase = createClient();
-    // process.env.SUPABASE_URL || "",
-    // process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+    const supabase = createClient(
+      process.env.SUPABASE_URL || "",
+      process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+    );
     const { data, error } = await supabase
       .from("products")
       .update(formData)
@@ -57,8 +82,6 @@ export async function PATCH(request: Request) {
       }
     );
   } catch (error) {
-    console.error(error);
-
     return NextResponse.json(
       { error: "An error occurred" },
       {

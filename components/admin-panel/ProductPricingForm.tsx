@@ -37,12 +37,20 @@ const PricingForm: React.FC<PricingFormProps> = ({
     );
     setPricingOptions(updatedPricingOptions);
   };
+  console.log(pricingOptions);
 
-  const defaultLabels = ["Select", "1/8", "1/2", "1/4", "1.0"];
   return (
     <section id="pricing-options" className="flex flex-col gap-2">
+      <div>
+        {Object.keys(pricingOptions).map((key: any) => (
+          <div key={key}>
+            {key}: {pricingOptions[key]}
+          </div>
+        ))}
+      </div>
+
       {/* Pricing option rows */}
-      {pricingOptions &&
+      {/* {pricingOptions &&
         pricingOptions.map((option: any, index: number) => (
           <div key={index} className="flex gap-4 justify-evenly">
             <div className="flex flex-col gap-2 w-1/6">
@@ -118,7 +126,7 @@ const PricingForm: React.FC<PricingFormProps> = ({
               Remove
             </button>
           </div>
-        ))}
+        ))} */}
       <Button
         type="button"
         onClick={handleAddOption}
