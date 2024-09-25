@@ -196,3 +196,10 @@ textarea:focus {
     flex-grow: 4.3;
   } */
 }
+
+.payment-form label {
+  padding-left: 5px;
+}
+.payment-form input {
+  margin-bottom: 10px;
+}

@@ -297,7 +297,6 @@ export default function TableComp({ product }: { product: string }) {
     if (fetchProductError) {
       console.warn(fetchProductError);
     } else {
-      console.log(data);
       setData(data);
     }
   };
@@ -324,6 +323,10 @@ export default function TableComp({ product }: { product: string }) {
   });
   const handleProductSubmit = async (e: any) => {
     e.preventDefault();
+    if (!formData.name) {
+      console.log("need product name");
+      return;
+    }
     if (!formData.id) {
       delete formData["id"];
     }
@@ -335,12 +338,11 @@ export default function TableComp({ product }: { product: string }) {
         },
         body: JSON.stringify(formData),
       });
-      const data = await res.json();
+      // const data = await res.json();
       if (res.ok) {
         fetchUserAndFlower();
         clearFormData();
         setOpenRowDrawer(false);
-        console.log(data);
       } else {
         console.error("Failed to fetch products");
       }
@@ -385,7 +387,7 @@ export default function TableComp({ product }: { product: string }) {
       qp: null,
       hp: null,
       p: null,
-      category: null,
+      category: "flower",
       weight_in_stock: 0,
       total_order_count: 0,
       total_lb_sold: 0,

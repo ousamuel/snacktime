@@ -1,71 +1,8 @@
 "use client";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
-
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import PricingForm from "@/components/admin-panel/ProductPricingForm";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
-import { SubmitButton } from "@/components/submit-button";
 import { ContentLayout } from "@/components/admin-panel/content-layout";
-import Link from "next/link";
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import {
-  ArrowUpDown,
-  ChevronDown,
-  MoreHorizontal,
-  SquareX,
-} from "lucide-react";
-import { createClient } from "@/utils/supabase/client";
-import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { addProductAction } from "@/app/actions";
-import { useRouter } from "next/navigation";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   Command,
   CommandDialog,
@@ -78,17 +15,19 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import DialogComp from "./DialogComp";
-import Papa from "papaparse";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
+import PaymentMethodForm from "./PaymentForm";
 
 export default function NewOrdersPage() {
+  const [paymentInfo, setPaymentInfo] = useState<any>({});
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [products, setProducts] = useState<any>([]);
   const [productData, setProductData] = useState<any>({});
   const [orderedItems, setOrderedItems] = useState<any[]>([]);
-  const [selectedOption, setSelectedOption] = useState<any>();
+  // const [selectedOption, setSelectedOption] = useState<any>();
   const [orderTotal, setOrderTotal] = useState<number>(0);
+
   const flowerPricing = ["eighth", "half", "oz", "q", "qp", "hp", "p"];
   const condimentPricing = ["Single", "2+", "4+", "10+", "25+", "100+"];
   useEffect(() => {
@@ -124,7 +63,14 @@ export default function NewOrdersPage() {
         <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
           ${orderTotal.toFixed(2)}
         </h3>
-        <Button onClick={() => console.log(orderedItems)}>Submit Order</Button>
+        <Button
+          onClick={() => {
+            console.log(orderedItems);
+            console.log(paymentInfo);
+          }}
+        >
+          Submit Order
+        </Button>
         <section className="flex w-full gap-4 flex-col md:flex-row">
           {/* <section className="flex flex-col grow items-center">
             <h3 className="text-center scroll-m-20 text-2xl font-semibold tracking-tight">
@@ -178,7 +124,7 @@ export default function NewOrdersPage() {
               Order Summary
             </h3>
             <section className="w-full">
-              <div className="grid grid-cols-3 font-semibold border-b pb-2 mb-2">
+              <div className="grid grid-cols-3 font-semibold border-b border-muted-foreground pb-2 mb-2">
                 <h3 className="text-left">Item</h3>
                 <h3 className="text-center">Quantity</h3>
                 <h3 className="text-right">Total</h3>
@@ -223,7 +169,7 @@ export default function NewOrdersPage() {
                 <p>No items added yet</p>
               )}
               <section>
-                <div className="grid grid-cols-3 font-semibold border-t pt-2 mt-2">
+                <div className="grid grid-cols-3 font-semibold border-t border-muted-foreground pt-2 mt-2">
                   <h3>Total</h3>
                   <h3></h3>
                   <h3 className="text-right">${orderTotal.toFixed(2)}</h3>
@@ -248,8 +194,15 @@ export default function NewOrdersPage() {
           />
         </section>
 
-        <section>
-          <h4>Payment Details</h4>
+        <section className="w-full">
+          <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-center">
+            Payment Details
+          </h4>
+          
+          <PaymentMethodForm
+            setPaymentInfo={setPaymentInfo}
+            paymentInfo={paymentInfo}
+          />
         </section>
 
         {/* DIALOG TRIGGER SET TO ONCLIKC AND THEN DO DIALOG FORM FOR CHOOSING OPTION */}

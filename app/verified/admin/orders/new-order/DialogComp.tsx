@@ -38,7 +38,7 @@ export default function DialogComp({
   const [products, setProducts] = useState<any>([]);
   const [selectedOption, setSelectedOption] = useState<any>();
   const [optionQuantity, setOptionQuantity] = useState<any>(1);
-
+ 
   const handleSaveItem = async () => {
     let newItem = {
       id: productData.id,
@@ -100,7 +100,7 @@ export default function DialogComp({
                 <div
                   key={i}
                   onClick={() => setSelectedOption(option)}
-                  className="flex items-center justify-between text-black py-3 px-1 rounded-md hover:bg-accent cursor-pointer"
+                  className="flex items-center justify-between text-foreground py-3 px-1 rounded-md hover:bg-accent cursor-pointer"
                 >
                   {/* Label for each radio item */}
                   <Label htmlFor={option}>{option.toUpperCase()}</Label>

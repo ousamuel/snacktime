@@ -23,7 +23,7 @@ export default function VerifiedHome() {
   };
 
   useEffect(() => {
-    getProducts();
+    // getProducts();
   }, []);
   const getProducts = async () => {
     // localStorage.clear();
