@@ -1,2 +1,16 @@
 Component to Purpose
 - Resizable shadcn --> admin table for products
+
+changed nextconfig.js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  env: {
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    SUPABASE_URL: process.env.SUPABASE_URL,
+  },
+};
+
+module.exports = nextConfig;
+
+
+to fix NEXTjs SSR with amplify issue
