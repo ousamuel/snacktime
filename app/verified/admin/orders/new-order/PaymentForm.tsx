@@ -195,11 +195,6 @@ const PaymentMethodForm = ({
   const clearFormData = () => {
     setFormData({});
   };
-  const handleFormSubmit = async () => {
-    console.log(selectedPaymentType);
-
-    console.log(formData);
-  };
   return (
     <div className="flex gap-4 w-full justify-evenly mb-[200px] min-h-[60vh]">
       <section className="">

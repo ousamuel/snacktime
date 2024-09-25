@@ -44,7 +44,6 @@ export default function NewOrdersPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        console.log(data);
         setProducts(data.data);
         // Store data in localStorage with a timestamp
         const timestamp = Date.now();
@@ -56,21 +55,55 @@ export default function NewOrdersPage() {
       console.error("Error fetching products:", error);
     }
   };
-
+  const handleOrderSubmit = async (e: any) => {
+    e.preventDefault();
+    // console.log(paymentInfo);
+    if (orderedItems.length <= 0) {
+      alert("no ordered items");
+      return;
+    } else if (!paymentInfo.telegramName || !paymentInfo.amountPaid) {
+      alert("no payment info");
+      return;
+    }
+    // console.log(orderedItems);
+    const formData = { paymentInfo, orderedItems };
+    console.log(formData)
+    // user_id uuid null default auth.uid (),
+    // product_id uuid null,
+    // amount_paid real null,
+    // telegram_name text null,
+    // items jsonb[] null default array[]::jsonb[],
+    // payment_type text not null default 'cash'::text,
+    // payment_details jsonb null,
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        console.log(data.data);
+        // fetchUserAndFlower();
+        // clearFormData();
+        // setOpenRowDrawer(false);
+      } else {
+        console.log(res)
+        console.error("Failed to insert order");
+      }
+    } catch (error) {
+      console.error("Error inserting order:", error);
+    }
+  };
   return (
     <ContentLayout title="New Orders">
       <main className="flex flex-col gap-2 items-center pr-6">
         <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
           ${orderTotal.toFixed(2)}
         </h3>
-        <Button
-          onClick={() => {
-            console.log(orderedItems);
-            console.log(paymentInfo);
-          }}
-        >
-          Submit Order
-        </Button>
+        <Button onClick={handleOrderSubmit}>Submit Order</Button>
         <section className="flex w-full gap-4 flex-col md:flex-row">
           {/* <section className="flex flex-col grow items-center">
             <h3 className="text-center scroll-m-20 text-2xl font-semibold tracking-tight">
@@ -198,7 +231,7 @@ export default function NewOrdersPage() {
           <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-center">
             Payment Details
           </h4>
-          
+
           <PaymentMethodForm
             setPaymentInfo={setPaymentInfo}
             paymentInfo={paymentInfo}
