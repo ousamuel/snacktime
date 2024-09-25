@@ -11,7 +11,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-
+import mockProducts from "./mockProducts.json";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import PricingForm from "@/components/admin-panel/ProductPricingForm";
@@ -87,6 +87,28 @@ export default function TableComp({ product }: { product: string }) {
       },
     }));
   };
+  const generateStockColumn = () => {
+    let key = product == "flower" ? "weight_in_stock" : "units_in_stock";
+    return {
+      accessorKey: key, // Access nested field
+      header: product == "flower" ? "Stock (lbs)" : "Stock (units)", // Dynamically set header based on key
+      cell: ({ row }: { row: any }) => {
+        const value = row.getValue(key);
+        return value ? value : "- -"; // Adjust based on your data
+      },
+    };
+  };
+  const generateSoldColumn = () => {
+    let key = product == "flower" ? "total_lbs_sold" : "total_units_sold";
+    return {
+      accessorKey: key, // Access nested field
+      header: product == "flower" ? "Sold (lbs)" : "Sold (units)", // Dynamically set header based on key
+      cell: ({ row }: { row: any }) => {
+        const value = row.getValue(key);
+        return value ? value : "- -"; // Adjust based on your data
+      },
+    };
+  };
   const columns: ColumnDef<unknown, any>[] = [
     {
       accessorKey: "name",
@@ -124,21 +146,12 @@ export default function TableComp({ product }: { product: string }) {
       ),
     },
     ...generatePricingColumns(),
-
-    {
-      accessorKey: "weight_in_stock",
-      header: "Stock (lbs)",
-      cell: ({ row }) => <div>{row.getValue("weight_in_stock")}</div>,
-    },
+    generateStockColumn(),
+    generateSoldColumn(),
     {
       accessorKey: "total_order_count",
       header: "Total Orders",
       cell: ({ row }) => <div>{row.getValue("total_order_count")}</div>,
-    },
-    {
-      accessorKey: "total_lb_sold",
-      header: "Sold (lbs)",
-      cell: ({ row }) => <div>{row.getValue("total_lb_sold")}</div>,
     },
 
     // {
@@ -671,7 +684,7 @@ export default function TableComp({ product }: { product: string }) {
                         >
                           <Label
                             htmlFor="category"
-                            className="text-gray-700 text-sm lg:text-lg pr-4 pl-1"
+                            className="text-foreground text-sm lg:text-md pr-4 pl-1"
                           >
                             Category
                           </Label>

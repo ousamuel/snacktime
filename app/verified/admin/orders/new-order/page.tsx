@@ -52,6 +52,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -76,15 +77,20 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/components/ui/command";
-
+import DialogComp from "./DialogComp";
 import Papa from "papaparse";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 
 export default function NewOrdersPage() {
-  const [filterBy, setFilterBy] = useState<string>("");
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [products, setProducts] = useState<any>([]);
   const [productData, setProductData] = useState<any>({});
+  const [orderedItems, setOrderedItems] = useState<any[]>([]);
+  const [selectedOption, setSelectedOption] = useState<any>();
+  const [orderTotal, setOrderTotal] = useState<number>(0);
+  const flowerPricing = ["eighth", "half", "oz", "q", "qp", "hp", "p"];
+  const condimentPricing = ["Single", "2+", "4+", "10+", "25+", "100+"];
   useEffect(() => {
     fetchProductsFromAPI();
   }, []);
@@ -111,29 +117,40 @@ export default function NewOrdersPage() {
       console.error("Error fetching products:", error);
     }
   };
+
   return (
     <ContentLayout title="New Orders">
       <main className="flex flex-col gap-2 items-center pr-6">
-        <h3>Total Cost</h3>
-        <h2>Transaction Details</h2>
-        <section className="flex w-full">
-          <Command className="max-w-[500px]">
+        <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+          ${orderTotal.toFixed(2)}
+        </h3>
+        <Button onClick={() => console.log(orderedItems)}>Submit Order</Button>
+        <section className="flex w-full gap-4 flex-col md:flex-row">
+          {/* <section className="flex flex-col grow items-center">
+            <h3 className="text-center scroll-m-20 text-2xl font-semibold tracking-tight">
+              Product Search
+            </h3> */}
+          {/* </section> */}
+          <Command className="max-w-[400px]">
             <CommandInput placeholder="Find product by name..." />
-            <CommandList>
+            <CommandList className="h-full">
               <CommandEmpty>No results found.</CommandEmpty>
-              <CommandGroup heading="Flower" className="max-h-[300px] ">
+              <CommandGroup heading="Flower" className="">
                 {products &&
                   products
                     .filter((product: any) => product.category == "flower")
                     .map((product: any, i: number) => (
-                      <CommandItem
-                        key={i}
+                      <div
                         onClick={() => {
+                          setOpenDialog(true);
+                          console.log(product);
                           setProductData(product);
                         }}
                       >
-                        {product.name}
-                      </CommandItem>
+                        <CommandItem key={i} className="cursor-pointer">
+                          {product.name}
+                        </CommandItem>
+                      </div>
                     ))}
               </CommandGroup>
               <CommandSeparator />
@@ -142,14 +159,100 @@ export default function NewOrdersPage() {
                   products
                     .filter((product: any) => product.category !== "flower")
                     .map((product: any, i: number) => (
-                      <CommandItem key={i}>{product.name}</CommandItem>
+                      <div
+                        onClick={() => {
+                          setOpenDialog(true);
+                          setProductData(product);
+                        }}
+                      >
+                        <CommandItem key={i} className="cursor-pointer">
+                          {product.name}
+                        </CommandItem>
+                      </div>
                     ))}
               </CommandGroup>
             </CommandList>
           </Command>
+          <section className="flex flex-col grow">
+            <h3 className="text-center scroll-m-20 mb-4 text-2xl font-semibold tracking-tight">
+              Order Summary
+            </h3>
+            <section className="w-full">
+              <div className="grid grid-cols-3 font-semibold border-b pb-2 mb-2">
+                <h3 className="text-left">Item</h3>
+                <h3 className="text-center">Quantity</h3>
+                <h3 className="text-right">Total</h3>
+              </div>
+
+              {/* Items Mapping */}
+              {orderedItems.length > 0 ? (
+                orderedItems.map((item: any, index: number) => (
+                  <div key={index} className="grid grid-cols-3 py-2">
+                    <div className="text-left">
+                      <h3
+                        className={`mb-1 text-white px-2 py-1 rounded-md ${
+                          item.category.toLowerCase() === "flower"
+                            ? "bg-green-500"
+                            : item.category.toLowerCase() === "vape"
+                              ? "bg-blue-500"
+                              : item.category.toLowerCase() === "concentrate"
+                                ? "bg-orange-500"
+                                : item.category.toLowerCase() === "edible"
+                                  ? "bg-purple-500"
+                                  : "bg-gray-500"
+                        }`}
+                      >
+                        {item.name}
+                      </h3>
+                      <p className="text-muted-foreground">
+                        (${item.option_cost}/{item.option_weight})
+                      </p>
+                    </div>
+                    <h3 className="text-center">{item.quantity}</h3>
+                    <div className="text-right">
+                      <h3>${item.total_cost.toFixed(2)}</h3>
+                      <p className="text-muted-foreground">
+                        {item.category == "flower"
+                          ? item.total_weight_in_lbs + " lbs"
+                          : item.quantity + " units"}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p>No items added yet</p>
+              )}
+              <section>
+                <div className="grid grid-cols-3 font-semibold border-t pt-2 mt-2">
+                  <h3>Total</h3>
+                  <h3></h3>
+                  <h3 className="text-right">${orderTotal.toFixed(2)}</h3>
+                </div>
+              </section>
+            </section>
+          </section>
+
+          <DialogComp
+            pricingOptions={
+              productData.category == "flower"
+                ? flowerPricing
+                : condimentPricing
+            }
+            orderTotal={orderTotal}
+            setOrderTotal={setOrderTotal}
+            setOpenDialog={setOpenDialog}
+            openDialog={openDialog}
+            productData={productData}
+            orderedItems={orderedItems}
+            setOrderedItems={setOrderedItems}
+          />
         </section>
 
-{/* DIALOG TRIGGER SET TO ONCLIKC AND THEN DO DIALOG FORM FOR CHOOSING OPTION */}
+        <section>
+          <h4>Payment Details</h4>
+        </section>
+
+        {/* DIALOG TRIGGER SET TO ONCLIKC AND THEN DO DIALOG FORM FOR CHOOSING OPTION */}
         {/* {focusFilter && (
           <DropdownMenu open={focusFilter}>
             <DropdownMenuContent>
@@ -162,8 +265,6 @@ export default function NewOrdersPage() {
             </DropdownMenuContent>
           </DropdownMenu>
         )} */}
-
-        <section className="flex"></section>
       </main>
     </ContentLayout>
   );

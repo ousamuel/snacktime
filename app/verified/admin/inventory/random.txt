@@ -1,34 +1,17 @@
-Green mountain extracts
-1G - 25
-8th 4th, Hfs, Q
+Example Orders
 
+telegram name : asdasdasdasd
 
+order: zip of peach tree, 2 magic marker, q candy cane 
 
-Disposables
-Singles
-10+
-25+
+record payment
+(options)
+- cash --> just raw number
+- zelle or whatever
+-> need to input details
 
-Rosin
-Single
-3+
-Box of 10
-Box of 50
-
-Mix and Match
-
-
-
-
-
-high tek 250mg infused syrup
-
-singles: 30
-4+ =  25 ea
-35+ = 15 ea
-Box of 70+ = 12 ea 
-3 box + = 10ea
-
+finish workingo n dropdown
+- make each list a clickable to launch that dialog that includes all pricing options
 
 
 random product

@@ -354,78 +354,14 @@ export default function OrderTableComp() {
           </div> */}
         </section>
         <section className="flex flex-col gap-2">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button className="px-2 h-fit  border border-accent">
-                Add New
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-full w-5/6 max-h-[calc(100vh-100px)] overflow-y-scroll">
-              <DialogTitle asChild>
-                <h1 className="text-2xl font-medium">Add New Order</h1>
-              </DialogTitle>
-              <form
-                onSubmit={handleOrderSubmit}
-                className="flex flex-col w-full p-4 gap-2 [&>input]:mb-4 text-foreground"
-              >
-                <div className="flex flex-col gap-3">
-                  <div className="flex flex-col gap-2 lg:flex-row">
-                    <section className="flex flex-1 flex-col [&>input]:mb-3">
-                      <Label htmlFor="name">Product Name</Label>
-                      <Input
-                        name="name"
-                        placeholder="name"
-                        value={formData.name}
-                        onChange={handleFormValueChange}
-                      />
-                      <Label htmlFor="description">Description</Label>
-                      <Textarea
-                        name="description"
-                        value={formData.description}
-                        onChange={handleFormValueChange}
-                        placeholder="Product Description"
-                        className=""
-                      />
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="strain">Strain</Label>
-                        <select
-                          name="strain"
-                          required
-                          value={formData.strain}
-                          onChange={handleFormValueChange}
-                          className="border rounded p-2"
-                        >
-                          <option value="sativa">Sativa</option>
-                          <option value="indica">Indica</option>
-                          <option value="hybrid">Hybrid</option>
-                        </select>
-                      </div>
-                    </section>
-                    <section className="flex flex-col flex-1">
-                      <h4 className="text-center underline">Pricing Options</h4>
-                      <PricingForm
-                        pricingOptions={formData.pricing_options}
-                        setPricingOptions={(updatedOptions: any) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            pricing_options: updatedOptions,
-                          }))
-                        }
-                      />
-                    </section>
-                  </div>
-                  <SubmitButton
-                    pendingText="Saving..."
-                    formAction={addProductAction}
-                  >
-                    Save
-                  </SubmitButton>
-                  {/* <FormMessage message={searchParams} /> */}
-                </div>
-              </form>
-              <DialogDescription className="h-0" />
-            </DialogContent>
-          </Dialog>{" "}
+          <Button asChild>
+            <Link
+              href="/verified/admin/orders/new-order"
+              className="px-2 h-fit  border border-accent"
+            >
+              Add New
+            </Link>
+          </Button>
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="">
