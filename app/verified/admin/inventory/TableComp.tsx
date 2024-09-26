@@ -112,18 +112,23 @@ export default function TableComp({ product }: { product: string }) {
     };
   };
   const columns: ColumnDef<unknown, any>[] = [
+    // {
+    //   accessorKey: "name",
+    //   header: ({ column }) => (
+    //     <Button
+    //       variant="ghost"
+    //       className="pl-0"
+    //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    //     >
+    //       Name
+    //       <ArrowUpDown className="ml-2 h-4 w-4" />
+    //     </Button>
+    //   ),
+    //   cell: ({ row }) => <div>{row.getValue("name")}</div>,
+    // },
     {
       accessorKey: "name",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          className="pl-0"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
+      header: "Name",
       cell: ({ row }) => <div>{row.getValue("name")}</div>,
     },
     {
@@ -207,24 +212,6 @@ export default function TableComp({ product }: { product: string }) {
     //     );
     //   },
     // },
-    // {
-    //   accessorKey: "pricing_options", // If you have pricing data
-    //   header: "Pricing Options",
-    //   cell: ({ row }) => {
-    //     const pricing = row.getValue("pricing_options");
-    //     if (typeof pricing === "object" && pricing !== null) {
-    //       return (
-    //         <div className="min-w-[200px]">
-    //           {Object.entries(pricing).map(([key, value]) => (
-    //             <div key={key}>
-    //               {key}: ${value.toFixed(2)}{" "}
-    //               {/* Adjust based on your pricing data */}
-    //             </div>
-    //           ))}
-    //         </div>
-    //       );
-    //     }
-    //   },
     // },
   ];
   const router = useRouter();
@@ -456,7 +443,7 @@ export default function TableComp({ product }: { product: string }) {
             className="max-w-sm ring-0"
           />
           <div className="flex flex-col gap-2">
-            <RadioGroup
+            {/* <RadioGroup
               value={selectedValue} // Controlled value for selected radio
               className="gap-0"
               onValueChange={(value) => {
@@ -485,7 +472,7 @@ export default function TableComp({ product }: { product: string }) {
                   <Label htmlFor={strain.value}>{strain.label}</Label>
                 </div>
               ))}
-            </RadioGroup>
+            </RadioGroup> */}
           </div>
         </section>
         <section className="flex flex-col gap-2">
@@ -695,11 +682,11 @@ export default function TableComp({ product }: { product: string }) {
                       return (
                         <div
                           key={columnKey}
-                          className="flex flex-col justify-between"
+                          className="flex flex-col justify-end"
                         >
                           <Label
                             htmlFor="category"
-                            className="text-foreground text-sm lg:text-md pr-4 pl-1"
+                            className="text-foreground text-sm lg:text-md pr-4 pl-1 "
                           >
                             Category
                           </Label>
@@ -721,7 +708,7 @@ export default function TableComp({ product }: { product: string }) {
                     return (
                       <div
                         key={columnKey}
-                        className="flex flex-col justify-between"
+                        className="flex flex-col justify-end"
                       >
                         {/* Label for the input */}
                         <Label
@@ -736,7 +723,7 @@ export default function TableComp({ product }: { product: string }) {
                           id={columnKey}
                           name={columnKey}
                           defaultValue={columnValue || ""}
-                          className="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2"
+                          className="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2 min-w-[80px]"
                           onChange={handleFormValueChange}
                         />
                       </div>

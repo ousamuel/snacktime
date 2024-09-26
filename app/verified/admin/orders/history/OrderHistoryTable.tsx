@@ -70,20 +70,28 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 
 const columns: ColumnDef<unknown, any>[] = [
-  // {
-  //   accessorKey: "product_name",
-  //   header: ({ column }) => (
-  //     <Button
-  //       variant="ghost"
-  //       className="pl-0"
-  //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //     >
-  //       Product Name
-  //       <ArrowUpDown className="ml-2 h-4 w-4" />
-  //     </Button>
-  //   ),
-  //   cell: ({ row }) => <div>{row.getValue("product_name")}</div>,
-  // },
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: "telegram_name",
     header: "Telegram Name",
@@ -105,7 +113,7 @@ const columns: ColumnDef<unknown, any>[] = [
                     index > 0 ? "border-t border-foreground mt-1 pt-1" : ""
                   }
                 >
-                  <p className="font-bold">
+                  <p className="font-bold min-w-fit whitespace-nowrap">
                     {item.name} - ${item.total_cost.toFixed(2)}
                   </p>
                   <p>
@@ -134,6 +142,45 @@ const columns: ColumnDef<unknown, any>[] = [
     },
   },
   {
+    accessorKey: "order_method_details", // If you have pricing data
+    header: "Order Method Details",
+    cell: ({ row }) => {
+      const splitCamelCase = (key: string) => {
+        return key
+          .replace(/([A-Z])/g, " $1")
+          .replace(/^./, (str) => str.toUpperCase());
+      };
+
+      const orderMethodDetails: any = row.getValue("order_method_details");
+
+      return (
+        <div>
+          {orderMethodDetails ? (
+            <ul>
+              {Object.keys(orderMethodDetails)
+                .filter(
+                  (key) => true
+                  // key !== "paymentType" &&
+                  // key !== "amountPaid" &&
+                  // key !== "telegramName"
+                )
+                .map((key: any, index: number) => {
+                  return (
+                    <li key={index} className='min-w-[150px]'>
+                      <span className="font-bold">{splitCamelCase(key)}</span>:{" "}
+                      {orderMethodDetails[key]}
+                    </li>
+                  );
+                })}
+            </ul>
+          ) : (
+            <span>No payment details</span>
+          )}
+        </div>
+      );
+    },
+  },
+  {
     accessorKey: "payment_details", // If you have pricing data
     header: "Payment Details",
     cell: ({ row }) => {
@@ -144,11 +191,6 @@ const columns: ColumnDef<unknown, any>[] = [
       };
 
       const paymentDetails: any = row.getValue("payment_details");
-      const List = () => {
-        for (const key in paymentDetails) {
-          return <div>{paymentDetails[key]}</div>;
-        }
-      };
 
       return (
         <div>
@@ -163,8 +205,9 @@ const columns: ColumnDef<unknown, any>[] = [
                 )
                 .map((key: any, index: number) => {
                   return (
-                    <li key={index}>
-                      {splitCamelCase(key)}: {paymentDetails[key]}
+                    <li key={index} className='min-w-[150px]'>
+                      <span className="font-bold">{splitCamelCase(key)}</span>:{" "}
+                      {paymentDetails[key]}
                     </li>
                   );
                 })}
@@ -267,7 +310,7 @@ export default function OrderTableComp() {
         });
         const data = await res.json();
         if (res.ok) {
-          setData(data.data);
+          setData(data.data.reverse());
         } else {
           console.error("Failed to fetch orders");
         }
@@ -629,10 +672,43 @@ export default function OrderTableComp() {
           </DrawerFooter>
         </DrawerContent>
       </Drawer> */}
-      <div className="flex items-center justify-end space-x-2 py-4">
+      <section className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s).
+          <div>
+            {table.getFilteredSelectedRowModel().rows.length} of{" "}
+            {table.getFilteredRowModel().rows.length} row(s).
+          </div>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              {table.getFilteredSelectedRowModel().rows.length > 0 && (
+                <Button
+                  onClick={() =>
+                    console.log(table.getFilteredSelectedRowModel().rows.length)
+                  }
+                  className="bg-red-600 hover:bg-red-500 mt-1"
+                >
+                  Delete {table.getFilteredSelectedRowModel().rows.length}{" "}
+                  order(s)
+                </Button>
+              )}
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  Confirm deletion of{" "}
+                  {table.getFilteredSelectedRowModel().rows.length} order(s){" "}
+                </DialogTitle>
+                <DialogDescription>
+                  This action is <span className="text-red-600">permanent</span>{" "}
+                  and can not be undone.
+                  <Button className="w-full block mt-2 bg-red-600 hover:bg-red-500">
+                    Confirm
+                  </Button>
+                </DialogDescription>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
         </div>
         <div className="space-x-2">
           <Button
@@ -652,7 +728,7 @@ export default function OrderTableComp() {
             Next
           </Button>
         </div>
-      </div>
+      </section>
     </main>
   );
 }

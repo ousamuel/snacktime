@@ -42,6 +42,8 @@ export async function POST(request: Request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
     const formData = await request.json();
+    const orderMethodInfo = await formData.orderMethodInfo;
+    const order_method = await orderMethodInfo.orderMethod;
     const ordered_items = await formData.orderedItems;
     const paymentInfo = await formData.paymentInfo;
     const telegram_name = await paymentInfo.telegramName;
@@ -53,6 +55,8 @@ export async function POST(request: Request) {
       payment_type,
       payment_details: paymentInfo,
       amount_paid,
+      order_method,
+      order_method_details: orderMethodInfo,
     });
     // amount_paid and payment_type and telegram_name are all inside payment_details
     // may not need
@@ -154,6 +158,37 @@ export async function PATCH(request: Request) {
       {
         status: 500,
         headers: { "Access-Control-Allow-Origin": "*" },
+      }
+    );
+  }
+}
+export async function DELETE(request: Request) {
+  try {
+    const formData = await request.json();
+    const supabase = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const { data, error } = await supabase
+      .from("orders")
+      .delete()
+      .eq("id", formData.id);
+
+    if (error) {
+      console.log(error);
+      return NextResponse.json({ error: "Error deleting" });
+    }
+    return NextResponse.json(
+      { data },
+      {
+        status: 201,
+      }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { error: "An error occurred" },
+      {
+        status: 500,
       }
     );
   }

@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { ContentLayout } from "@/components/admin-panel/content-layout";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,18 +14,28 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/components/ui/command";
+import { debounce } from "lodash";
 import DialogComp from "./DialogComp";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import PaymentMethodForm from "./PaymentForm";
+import OrderMethodForm from "./OrderMethodForm";
 
 export default function NewOrdersPage() {
-  const [paymentInfo, setPaymentInfo] = useState<any>({ paymentType: "cash" });
+  const [paymentInfo, setPaymentInfo] = useState<any>({
+    paymentType: "cash",
+    telegramName: "",
+    amountPaid: "",
+    additionDetails: "",
+  });
+  const [orderMethodInfo, setOrderMethodInfo] = useState<any>({
+    paymentType: "cash",
+  });
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [products, setProducts] = useState<any>([]);
   const [productData, setProductData] = useState<any>({});
   const [orderedItems, setOrderedItems] = useState<any[]>([]);
-  // const [selectedOption, setSelectedOption] = useState<any>();
+  const [submittingOrder, setSubmittingOrder] = useState<boolean>(false);
   const [orderTotal, setOrderTotal] = useState<number>(0);
 
   const flowerPricing = ["eighth", "half", "oz", "q", "qp", "hp", "p"];
@@ -55,20 +65,18 @@ export default function NewOrdersPage() {
       console.error("Error fetching products:", error);
     }
   };
+
   const handleOrderSubmit = async (e: any) => {
     e.preventDefault();
-    // console.log(paymentInfo);
     if (orderedItems.length <= 0) {
-      alert("no ordered items");
+      console.log("no ordered items");
       return;
     } else if (!paymentInfo.telegramName || !paymentInfo.amountPaid) {
       alert("no payment info");
       return;
     }
-    console.log(orderedItems);
-    const formData = { paymentInfo, orderedItems };
-    // console.log(formData);
-    // return;
+    const formData = { paymentInfo, orderedItems, orderMethodInfo };
+    console.log(formData)
     // user_id uuid null default auth.uid (),
     // product_id uuid null,
     // amount_paid real null,
@@ -77,6 +85,8 @@ export default function NewOrdersPage() {
     // payment_type text not null default 'cash'::text,
     // payment_details jsonb null,
     try {
+      setSubmittingOrder(true);
+
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: {
@@ -86,17 +96,27 @@ export default function NewOrdersPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        console.log(data.data);
         // fetchUserAndFlower();
-        // clearFormData();
         // setOpenRowDrawer(false);
       } else {
-        console.log(res);
         console.error("Failed to insert order");
       }
     } catch (error) {
       console.error("Error inserting order:", error);
+    } finally {
+      setSubmittingOrder(false);
+      // clearFormData();
     }
+  };
+  const clearFormData = () => {
+    setOrderedItems([]);
+    setOrderTotal(0);
+    setPaymentInfo({
+      paymentType: "cash",
+      telegramName: "",
+      amountPaid: "",
+      additionalDetails: "",
+    });
   };
   return (
     <ContentLayout title="New Orders">
@@ -104,7 +124,9 @@ export default function NewOrdersPage() {
         <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
           ${orderTotal.toFixed(2)}
         </h3>
-        <Button onClick={handleOrderSubmit}>Submit Order</Button>
+        <Button disabled={submittingOrder} onClick={handleOrderSubmit}>
+          {submittingOrder ? "Submitting" : "Submit Order"}
+        </Button>
         <section className="flex w-full gap-4 flex-col md:flex-row">
           {/* <section className="flex flex-col grow items-center">
             <h3 className="text-center scroll-m-20 text-2xl font-semibold tracking-tight">
@@ -157,7 +179,7 @@ export default function NewOrdersPage() {
           </Command>
           <section className="flex flex-col grow">
             <h3 className="text-center scroll-m-20 mb-4 text-2xl font-semibold tracking-tight">
-              Order Summary
+              Item Summary
             </h3>
             <section className="w-full">
               <div className="grid grid-cols-3 font-semibold border-b border-muted-foreground pb-2 mb-2">
@@ -167,7 +189,7 @@ export default function NewOrdersPage() {
               </div>
 
               {/* Items Mapping */}
-              {orderedItems.length > 0 ? (
+              {orderedItems && orderedItems.length > 0 ? (
                 orderedItems.map((item: any, index: number) => (
                   <div key={index} className="grid grid-cols-3 py-2">
                     <div className="text-left">
@@ -227,6 +249,16 @@ export default function NewOrdersPage() {
             productData={productData}
             orderedItems={orderedItems}
             setOrderedItems={setOrderedItems}
+          />
+        </section>
+
+        <section className="w-full">
+          <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-center">
+            Order Method
+          </h4>
+          <OrderMethodForm
+            setOrderMethodInfo={setOrderMethodInfo}
+            orderMethodInfo={orderMethodInfo}
           />
         </section>
 

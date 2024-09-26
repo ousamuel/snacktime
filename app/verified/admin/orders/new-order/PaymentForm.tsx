@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+
 type PaymentType = "cash" | "venmo" | "zelle" | "paypal" | "crypto" | "other";
 
 const PaymentForm: any = ({
@@ -16,7 +18,7 @@ const PaymentForm: any = ({
     case "cash":
       return (
         <form>
-          <Label>
+          {/* <Label>
             Payment Completed:
             <Input
               type="checkbox"
@@ -24,7 +26,7 @@ const PaymentForm: any = ({
               onChange={handleFormValueChange}
               checked={formData.completed || false}
             />
-          </Label>
+          </Label> */}
         </form>
       );
     case "venmo":
@@ -146,11 +148,12 @@ const PaymentForm: any = ({
         <form>
           <Label>
             Other Information:
-            <textarea
+            <Textarea
               name="otherDetails"
               onChange={handleFormValueChange}
+              placeholder="Enter other details here..."
               value={formData.otherDetails || ""}
-            ></textarea>
+            ></Textarea>
           </Label>
         </form>
       );
@@ -168,7 +171,6 @@ const PaymentMethodForm = ({
 }) => {
   const [selectedPaymentType, setSelectedPaymentType] =
     useState<PaymentType>("cash");
-
 
   const handleFormValueChange = (e: any) => {
     const { name, value } = e.target;
@@ -192,8 +194,8 @@ const PaymentMethodForm = ({
     });
   };
   return (
-    <div className="flex gap-4 w-full justify-evenly mb-[200px] min-h-[60vh]">
-      <section className="">
+    <div className="flex flex-col md:flex-row gap-4 w-full justify-evenly mb-[200px] min-h-[60vh]">
+      <section className="min-w-[170px]">
         <Label className="text-center pl-1">Payment Type</Label>
         <select
           value={selectedPaymentType}
@@ -221,6 +223,7 @@ const PaymentMethodForm = ({
         <Input
           type="text"
           name="telegramName"
+          value={paymentInfo.telegramName}
           onChange={handleFormValueChange}
           placeholder="Customer Telegram Name"
         />
@@ -229,6 +232,7 @@ const PaymentMethodForm = ({
           <Input
             type="number"
             name="amountPaid"
+            value={paymentInfo.amountPaid}
             onChange={handleFormValueChange}
             placeholder="Amount Paid ($)"
           />
@@ -238,6 +242,15 @@ const PaymentMethodForm = ({
           formData={paymentInfo}
           handleFormValueChange={handleFormValueChange}
         />
+        <Label>
+          Additional Information:
+          <Textarea
+            name="otherDetails"
+            onChange={handleFormValueChange}
+            placeholder="Enter additional details here..."
+            value={paymentInfo.additionalDetails}
+          ></Textarea>
+        </Label>
       </section>
     </div>
   );
