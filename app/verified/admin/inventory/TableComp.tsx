@@ -1,6 +1,8 @@
 "use client";
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { debounce } from "lodash";
+
 import {
   Drawer,
   DrawerClose,
@@ -99,7 +101,7 @@ export default function TableComp({ product }: { product: string }) {
     };
   };
   const generateSoldColumn = () => {
-    let key = product == "flower" ? "total_lbs_sold" : "total_units_sold";
+    let key = product == "flower" ? "total_lb_sold" : "total_units_sold";
     return {
       accessorKey: key, // Access nested field
       header: product == "flower" ? "Sold (lbs)" : "Sold (units)", // Dynamically set header based on key
@@ -303,8 +305,10 @@ export default function TableComp({ product }: { product: string }) {
   useEffect(() => {
     fetchUserAndFlower();
   }, []);
+  const memoizedData = useMemo(() => data, [data]);
+
   const table = useReactTable({
-    data,
+    data: memoizedData,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -351,11 +355,20 @@ export default function TableComp({ product }: { product: string }) {
     }
   };
   const handleFormValueChange = (e: any) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    debounceSetFormData(name, value);
   };
+
+  // Debounce function
+  const debounceSetFormData = useCallback(
+    debounce((name, value) => {
+      setFormData((prev: any) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }, 300),
+    []
+  ); // Adjust debounce time as necessary
 
   const handleFileChange = (event: any) => {
     const file = event.target.files[0];
@@ -672,7 +685,7 @@ export default function TableComp({ product }: { product: string }) {
               </DrawerTitle>
               <DrawerDescription asChild>
                 {/* Dynamically create form fields based on the columns */}
-                <form className="flex">
+                <div className="flex">
                   {columns.map((column: any) => {
                     const columnKey = column.accessorKey;
                     const columnValue = selectedRow[columnKey]; // Fetch the corresponding row data
@@ -729,7 +742,7 @@ export default function TableComp({ product }: { product: string }) {
                       </div>
                     );
                   })}
-                </form>
+                </div>
               </DrawerDescription>
             </form>
           </DrawerHeader>

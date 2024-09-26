@@ -5,12 +5,12 @@ type PaymentType = "cash" | "venmo" | "zelle" | "paypal" | "crypto" | "other";
 
 const PaymentForm: any = ({
   paymentType,
-  handleFormValueChangeChange,
+  handleFormValueChange,
   formData,
 }: {
   paymentType: string;
   formData: any;
-  handleFormValueChangeChange: any;
+  handleFormValueChange: any;
 }) => {
   switch (paymentType) {
     case "cash":
@@ -21,7 +21,7 @@ const PaymentForm: any = ({
             <Input
               type="checkbox"
               name="completed"
-              onChange={handleFormValueChangeChange}
+              onChange={handleFormValueChange}
               checked={formData.completed || false}
             />
           </Label>
@@ -36,7 +36,7 @@ const PaymentForm: any = ({
               type="text"
               name="venmoUsername"
               placeholder="Venmo Username or Email"
-              onChange={handleFormValueChangeChange}
+              onChange={handleFormValueChange}
               value={formData.venmoUsername || ""}
             />
           </Label>
@@ -51,7 +51,7 @@ const PaymentForm: any = ({
               type="tel"
               name="zelleNumber"
               placeholder="Zelle Phone Number"
-              onChange={handleFormValueChangeChange}
+              onChange={handleFormValueChange}
               value={formData.zelleNumber || ""}
             />
           </Label>
@@ -61,7 +61,7 @@ const PaymentForm: any = ({
               type="text"
               name="zelleName"
               placeholder="Full Name"
-              onChange={handleFormValueChangeChange}
+              onChange={handleFormValueChange}
               value={formData.zelleName || ""}
             />
           </Label>
@@ -76,7 +76,7 @@ const PaymentForm: any = ({
               type="email"
               name="paypalEmail"
               placeholder="PayPal Email"
-              onChange={handleFormValueChangeChange}
+              onChange={handleFormValueChange}
               value={formData.paypalEmail || ""}
             />
           </Label>
@@ -86,7 +86,7 @@ const PaymentForm: any = ({
               type="text"
               name="paypalName"
               placeholder="Full Name"
-              onChange={handleFormValueChangeChange}
+              onChange={handleFormValueChange}
               value={formData.paypalName || ""}
             />
           </Label>
@@ -96,7 +96,7 @@ const PaymentForm: any = ({
               type="text"
               name="paypalTransactionId"
               placeholder="Transaction ID"
-              onChange={handleFormValueChangeChange}
+              onChange={handleFormValueChange}
               value={formData.paypalTransactionId || ""}
             />
           </Label>
@@ -110,7 +110,7 @@ const PaymentForm: any = ({
             <select
               name="cryptoType"
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible: focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              onChange={handleFormValueChangeChange}
+              onChange={handleFormValueChange}
               value={formData.cryptoType || ""}
             >
               <option value="">Select</option>
@@ -125,7 +125,7 @@ const PaymentForm: any = ({
               type="text"
               name="walletAddress"
               placeholder="Wallet Address"
-              onChange={handleFormValueChangeChange}
+              onChange={handleFormValueChange}
               value={formData.walletAddress || ""}
             />
           </Label>
@@ -135,7 +135,7 @@ const PaymentForm: any = ({
               type="text"
               name="transactionHash"
               placeholder="Transaction Hash"
-              onChange={handleFormValueChangeChange}
+              onChange={handleFormValueChange}
               value={formData.transactionHash || ""}
             />
           </Label>
@@ -148,7 +148,7 @@ const PaymentForm: any = ({
             Other Information:
             <textarea
               name="otherDetails"
-              onChange={handleFormValueChangeChange}
+              onChange={handleFormValueChange}
               value={formData.otherDetails || ""}
             ></textarea>
           </Label>
@@ -169,31 +169,27 @@ const PaymentMethodForm = ({
   const [selectedPaymentType, setSelectedPaymentType] =
     useState<PaymentType>("cash");
 
-  const [formData, setFormData] = useState<any>({});
-  const [amountPaid, setAmountPaid] = useState<number>();
 
-  const handleFormValueChangeChangeChange = (e: any) => {
-    if (
-      (selectedPaymentType == "crypto" && !formData.cryptoType) ||
-      formData.cryptoType == ""
-    ) {
-      alert("need cryto type");
-      //   temp fix to not assigning bitcoinc instantly
-    }
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    setPaymentInfo({ ...paymentInfo, paymentDetails: formData });
+  const handleFormValueChange = (e: any) => {
+    const { name, value } = e.target;
+
+    setPaymentInfo((prev: any) => ({
+      ...prev,
+      [name]: value,
+      // paymentDetails: {
+      //   ...prev.paymentDetails,
+      //   [name]: value,
+      // },
+    }));
   };
-  const handlePaymentInfoChange = (e: any) => {
-    setPaymentInfo({
-      ...paymentInfo,
-      [e.target.name]: e.target.value,
-    });
-  };
+
+  // Clear form data
   const clearFormData = () => {
-    setFormData({});
+    setPaymentInfo({
+      paymentType: "cash",
+      telegramName: paymentInfo.telegramName,
+      amountPaid: paymentInfo.amountPaid,
+    });
   };
   return (
     <div className="flex gap-4 w-full justify-evenly mb-[200px] min-h-[60vh]">
@@ -205,7 +201,7 @@ const PaymentMethodForm = ({
           name="paymentType"
           onChange={(e) => {
             clearFormData();
-            handlePaymentInfoChange(e);
+            handleFormValueChange(e);
             setSelectedPaymentType(e.target.value as PaymentType);
           }}
         >
@@ -225,7 +221,7 @@ const PaymentMethodForm = ({
         <Input
           type="text"
           name="telegramName"
-          onChange={handlePaymentInfoChange}
+          onChange={handleFormValueChange}
           placeholder="Customer Telegram Name"
         />
         <Label>
@@ -233,14 +229,14 @@ const PaymentMethodForm = ({
           <Input
             type="number"
             name="amountPaid"
-            onChange={handlePaymentInfoChange}
+            onChange={handleFormValueChange}
             placeholder="Amount Paid ($)"
           />
         </Label>{" "}
         <PaymentForm
           paymentType={selectedPaymentType}
-          formData={formData}
-          handleFormValueChangeChange={handleFormValueChangeChangeChange}
+          formData={paymentInfo}
+          handleFormValueChange={handleFormValueChange}
         />
       </section>
     </div>

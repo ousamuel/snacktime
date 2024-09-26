@@ -20,7 +20,7 @@ import { RootState } from "@/lib/store";
 import PaymentMethodForm from "./PaymentForm";
 
 export default function NewOrdersPage() {
-  const [paymentInfo, setPaymentInfo] = useState<any>({});
+  const [paymentInfo, setPaymentInfo] = useState<any>({ paymentType: "cash" });
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [products, setProducts] = useState<any>([]);
   const [productData, setProductData] = useState<any>({});
@@ -65,9 +65,10 @@ export default function NewOrdersPage() {
       alert("no payment info");
       return;
     }
-    // console.log(orderedItems);
+    console.log(orderedItems);
     const formData = { paymentInfo, orderedItems };
-    console.log(formData)
+    // console.log(formData);
+    // return;
     // user_id uuid null default auth.uid (),
     // product_id uuid null,
     // amount_paid real null,
@@ -90,7 +91,7 @@ export default function NewOrdersPage() {
         // clearFormData();
         // setOpenRowDrawer(false);
       } else {
-        console.log(res)
+        console.log(res);
         console.error("Failed to insert order");
       }
     } catch (error) {
@@ -120,6 +121,7 @@ export default function NewOrdersPage() {
                     .filter((product: any) => product.category == "flower")
                     .map((product: any, i: number) => (
                       <div
+                        key={i}
                         onClick={() => {
                           setOpenDialog(true);
                           console.log(product);
@@ -139,6 +141,7 @@ export default function NewOrdersPage() {
                     .filter((product: any) => product.category !== "flower")
                     .map((product: any, i: number) => (
                       <div
+                        key={i}
                         onClick={() => {
                           setOpenDialog(true);
                           setProductData(product);

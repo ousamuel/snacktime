@@ -38,7 +38,7 @@ export default function DialogComp({
   const [products, setProducts] = useState<any>([]);
   const [selectedOption, setSelectedOption] = useState<any>();
   const [optionQuantity, setOptionQuantity] = useState<any>(1);
- 
+
   const handleSaveItem = async () => {
     let newItem = {
       id: productData.id,
@@ -90,7 +90,7 @@ export default function DialogComp({
         <DialogHeader>
           <DialogTitle>{productData.name}</DialogTitle>
           <p>Price Variations</p>
-          <DialogDescription>
+          <DialogDescription asChild>
             <RadioGroup
               value={selectedOption} // This tracks the selected option
               onValueChange={setSelectedOption} // Update the selected option

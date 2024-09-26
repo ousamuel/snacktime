@@ -70,25 +70,137 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 
 const columns: ColumnDef<unknown, any>[] = [
+  // {
+  //   accessorKey: "product_name",
+  //   header: ({ column }) => (
+  //     <Button
+  //       variant="ghost"
+  //       className="pl-0"
+  //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+  //     >
+  //       Product Name
+  //       <ArrowUpDown className="ml-2 h-4 w-4" />
+  //     </Button>
+  //   ),
+  //   cell: ({ row }) => <div>{row.getValue("product_name")}</div>,
+  // },
   {
-    accessorKey: "product_name",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        className="pl-0"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Product Name
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => <div>{row.getValue("product_name")}</div>,
+    accessorKey: "telegram_name",
+    header: "Telegram Name",
+    cell: ({ row }) => <div>{row.getValue("telegram_name")}</div>,
   },
   {
-    accessorKey: "last_updated",
-    header: "Last Updated",
+    accessorKey: "ordered_items", // Assuming this contains an array of items
+    header: "Ordered Items",
     cell: ({ row }) => {
-      const lastUpdated = new Date(row.getValue("last_updated"));
+      const orderedItems = row.getValue("ordered_items");
+      return (
+        <div>
+          {orderedItems && Array.isArray(orderedItems) ? (
+            <ul>
+              {orderedItems.map((item, index) => (
+                <li
+                  key={index}
+                  className={
+                    index > 0 ? "border-t border-foreground mt-1 pt-1" : ""
+                  }
+                >
+                  <p className="font-bold">
+                    {item.name} - ${item.total_cost.toFixed(2)}
+                  </p>
+                  <p>
+                    Pricing: ${item.option_cost}/
+                    {item.option_weight == "eighth"
+                      ? "8th"
+                      : item.option_weight}{" "}
+                  </p>
+                  <p>Quantity: {item.quantity}</p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <span>No items</span>
+          )}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "amount_paid", // If you have pricing data
+    header: "Amount Paid",
+    cell: ({ row }) => {
+      const pricing = parseFloat(row.getValue("amount_paid"));
+      return pricing ? `$${pricing.toFixed(2)}` : "N/A";
+    },
+  },
+  {
+    accessorKey: "payment_details", // If you have pricing data
+    header: "Payment Details",
+    cell: ({ row }) => {
+      const splitCamelCase = (key: string) => {
+        return key
+          .replace(/([A-Z])/g, " $1")
+          .replace(/^./, (str) => str.toUpperCase());
+      };
+
+      const paymentDetails: any = row.getValue("payment_details");
+      const List = () => {
+        for (const key in paymentDetails) {
+          return <div>{paymentDetails[key]}</div>;
+        }
+      };
+
+      return (
+        <div>
+          {paymentDetails ? (
+            <ul>
+              {Object.keys(paymentDetails)
+                .filter(
+                  (key) => true
+                  // key !== "paymentType" &&
+                  // key !== "amountPaid" &&
+                  // key !== "telegramName"
+                )
+                .map((key: any, index: number) => {
+                  return (
+                    <li key={index}>
+                      {splitCamelCase(key)}: {paymentDetails[key]}
+                    </li>
+                  );
+                })}
+            </ul>
+          ) : (
+            <span>No payment details</span>
+          )}
+        </div>
+      );
+    },
+  },
+
+  {
+    accessorKey: "payment_type", //
+    header: "Payment Type",
+    cell: ({ row }) => (
+      <div
+        className={`px-2 py-1 rounded text-white text-sm ${
+          row.getValue("payment_type") === "cash"
+            ? "bg-green-500"
+            : row.getValue("payment_type") === "digital"
+              ? "bg-blue-500"
+              : row.getValue("payment_type") === "crypto"
+                ? "bg-yellow-500"
+                : "bg-gray-500"
+        }`}
+      >
+        {(row.getValue("payment_type") as string).toUpperCase()}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "created_at",
+    header: "Order Date",
+    cell: ({ row }) => {
+      const lastUpdated = new Date(row.getValue("created_at"));
       return (
         <div>
           {lastUpdated.toLocaleDateString("en-US", {
@@ -98,35 +210,6 @@ const columns: ColumnDef<unknown, any>[] = [
           })}
         </div>
       );
-    },
-  },
-  {
-    accessorKey: "customer_name",
-    header: "Customer Name",
-    cell: ({ row }) => <div>{row.getValue("customer_name")}</div>,
-  },
-  {
-    accessorKey: "created_at",
-    header: "Date",
-    cell: ({ row }) => {
-      const createdAt = new Date(row.getValue("created_at"));
-      return (
-        <div>
-          {createdAt.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "numeric",
-            day: "numeric",
-          })}
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "pricing", // If you have pricing data
-    header: "Pricing",
-    cell: ({ row }) => {
-      const pricing = parseFloat(row.getValue("pricing"));
-      return pricing ? `$${pricing.toFixed(2)}` : "N/A";
     },
   },
 ];
@@ -146,23 +229,20 @@ export default function OrderTableComp() {
   );
   const [csvData, setCsvData] = useState<any[]>([]);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<any>({
     id: "",
     name: "",
     description: "",
     strain: "", // Default strain value
     in_stock: "",
-    pricing_options: [],
     supplier: "",
-
-    // Add other form fields here if needed
   });
   const { user, secureAccess, loading, error } = useSelector(
     (state: RootState) => state.user
   );
 
   useEffect(() => {
-    // sessionStorage.clear();
+    sessionStorage.clear();
     const fetchUserAndOrders = async () => {
       const supabase = createClient();
       if (!user) {
@@ -178,25 +258,41 @@ export default function OrderTableComp() {
         return;
       }
 
-      const { data, error: fetchOrdersError } = await supabase
-        .from("orders")
-        .select();
-
-      if (data) {
-        const jsonString = JSON.stringify(data);
-        const sizeInBytes = new TextEncoder().encode(jsonString).length;
-        const sizeInMB = sizeInBytes / (1024 * 1024);
-        if (sizeInMB <= 2.5) {
-          sessionStorage.setItem("orders", JSON.stringify(data));
+      try {
+        const res = await fetch("/api/orders", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setData(data.data);
+        } else {
+          console.error("Failed to fetch orders");
         }
-        console.log(sessionStorage);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
       }
-      if (fetchOrdersError) {
-        console.warn(fetchOrdersError);
-      } else {
-        console.log(data);
-        setData(data);
-      }
+      // const { data, error: fetchOrdersError } = await supabase
+      //   .from("orders")
+      //   .select();
+
+      // if (data) {
+      //   const jsonString = JSON.stringify(data);
+      //   const sizeInBytes = new TextEncoder().encode(jsonString).length;
+      //   const sizeInMB = sizeInBytes / (1024 * 1024);
+      //   if (sizeInMB <= 2.5) {
+      //     sessionStorage.setItem("orders", JSON.stringify(data));
+      //   }
+      //   console.log(sessionStorage);
+      // }
+      // if (fetchOrdersError) {
+      //   console.warn(fetchOrdersError);
+      // } else {
+      //   console.log(data);
+      //   setData(data);
+      // }
     };
     fetchUserAndOrders();
   }, []);
@@ -268,46 +364,17 @@ export default function OrderTableComp() {
     }
   };
   const clearFormData = () => {
-    setFormData({
-      id: "",
-      name: "",
-      description: "",
-      strain: "", // Default strain value
-      in_stock: "",
-      pricing_options: [],
-      supplier: "",
-    });
+    setFormData({});
   };
   const handleOpenDrawer = async (rowData: any) => {
     console.log(rowData);
-    setSelectedPricingOptions(
-      rowData.pricing_options ? rowData.pricing_options : []
-    );
-    setFormData({
-      id: rowData.id,
-      name: rowData.name,
-      description: rowData.description,
-      strain: rowData.strain,
-      in_stock: rowData.in_stock,
-      pricing_options: rowData.pricing_options,
-      supplier: rowData.supplier || "",
-    });
+    setFormData({});
     setSelectedRow(rowData);
     setOpenRowDrawer(true);
-  };
-  const handleUnitConversion = (value: number, unit: string) => {
-    // 0.125, .25, .5, 1, 2
-    if (value <= 1) {
-    }
   };
 
   return (
     <main className="pr-6">
-      {/* <div>
-          <h1>Upload CSV</h1>
-          <input type="file" accept=".csv" onChange={handleFileChange} />
-          <button onClick={handleSubmit}>Submit to Supabase</button>
-        </div> */}
       <div className="flex justify-between py-4">
         <section>
           <h2 className="scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0">
@@ -315,12 +382,18 @@ export default function OrderTableComp() {
           </h2>
           <Input
             placeholder="Filter by name..."
-            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+            value={
+              (table.getColumn("telegram_name")?.getFilterValue() as string) ??
+              ""
+            }
             onChange={(event) =>
-              table.getColumn("name")?.setFilterValue(event.target.value)
+              table
+                .getColumn("telegram_name")
+                ?.setFilterValue(event.target.value)
             }
             className="max-w-sm ring-0"
           />
+
           {/* <div className="flex flex-col gap-2">
             <RadioGroup
               value={selectedValue} // Controlled value for selected radio
@@ -457,11 +530,10 @@ export default function OrderTableComp() {
           </TableBody>
         </Table>
       </div>
-      <Drawer
+      {/* <Drawer
         open={openRowDrawer}
         onOpenChange={(open) => {
           if (!open) {
-            //   setNumberCorrect(0);
             clearFormData();
             setSelectedPricingOptions([]);
           }
@@ -516,21 +588,6 @@ export default function OrderTableComp() {
                         <option value="hybrid">Hybrid</option>
                       </select>
                     </section>
-                    {/* <section>
-                      <Label htmlFor="category">Category</Label>
-                      <select
-                        name="category"
-                        required
-                        value={formData.category.toLowerCase()}
-                        onChange={handleFormValueChange}
-                        className="border rounded p-2"
-                      >
-                        <option value="flower">Flower</option>
-                        <option value="edible">Edible</option>
-                        <option value="vape">Vape</option>
-                        <option value="concentrate">Concentrate</option>
-                      </select>
-                    </section> */}
                     <section className="flex flex-col h-full">
                       <Label htmlFor="description">Description</Label>
                       <textarea
@@ -571,7 +628,7 @@ export default function OrderTableComp() {
             </Button>
           </DrawerFooter>
         </DrawerContent>
-      </Drawer>
+      </Drawer> */}
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}

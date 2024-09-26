@@ -60,24 +60,24 @@ export function getAdminList(pathname: string): Group[] {
             },
           ],
         },
-        {
-          href: "/verified/admin/pricing",
-          label: "Pricing",
-          active: pathname === "/verified/admin/pricing/nothing",
-          icon: Receipt,
-          submenus: [
-            {
-              href: "/verified/admin/pricing/flower",
-              label: "Flower",
-              active: pathname.includes("/admin/pricing/flower"),
-            },
-            {
-              href: "/verified/admin/pricing/condiments",
-              label: "Condiments",
-              active: pathname.includes("/admin/pricing/condiments"),
-            },
-          ],
-        },
+        // {
+        //   href: "/verified/admin/pricing",
+        //   label: "Pricing",
+        //   active: pathname === "/verified/admin/pricing/nothing",
+        //   icon: Receipt,
+        //   submenus: [
+        //     {
+        //       href: "/verified/admin/pricing/flower",
+        //       label: "Flower",
+        //       active: pathname.includes("/admin/pricing/flower"),
+        //     },
+        //     {
+        //       href: "/verified/admin/pricing/condiments",
+        //       label: "Condiments",
+        //       active: pathname.includes("/admin/pricing/condiments"),
+        //     },
+        //   ],
+        // },
       ],
     },
   ];
