@@ -1,89 +1,8 @@
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { OrderForm } from "../OrderPaymentFields";
 type OrderMethod = "pickup" | "delivery" | "shipping";
-
-const OrderForm: any = ({
-  orderMethod,
-  handleFormValueChange,
-  formData,
-}: {
-  orderMethod: string;
-  formData: any;
-  handleFormValueChange: any;
-}) => {
-  switch (orderMethod) {
-    case "pickup":
-      return (
-        <form>
-          <Label>
-            Pickup Location:
-            <Input
-              type="text"
-              name="pickupLocation"
-              placeholder="Enter pickup location"
-              onChange={handleFormValueChange}
-              value={formData.pickupLocation || ""}
-            />
-          </Label>
-        </form>
-      );
-    case "delivery":
-      return (
-        <form>
-          <Label>
-            Delivery Address:
-            <Input
-              type="text"
-              name="deliveryAddress"
-              placeholder="Enter delivery address"
-              onChange={handleFormValueChange}
-              value={formData.deliveryAddress || ""}
-            />
-          </Label>
-          
-        </form>
-      );
-    case "shipping":
-      return (
-        <form>
-          <Label>
-            Shipping Address:
-            <Input
-              type="text"
-              name="shippingAddress"
-              placeholder="Enter shipping address"
-              onChange={handleFormValueChange}
-              value={formData.shippingAddress || ""}
-            />
-          </Label>
-          <Label>
-            Shipping Carrier:
-            <Input
-              type="text"
-              name="shippingCarrier"
-              placeholder="Enter shipping carrier (e.g., FedEx, UPS)"
-              onChange={handleFormValueChange}
-              value={formData.shippingCarrier || ""}
-            />
-          </Label>
-          <Label>
-            Tracking Number:
-            <Input
-              type="text"
-              name="trackingNumber"
-              placeholder="Enter tracking number"
-              onChange={handleFormValueChange}
-              value={formData.trackingNumber || ""}
-            />
-          </Label>
-        </form>
-      );
-    default:
-      return <p>Please select a valid order method.</p>;
-  }
-};
 
 const OrderMethodForm = ({
   orderMethodInfo,
@@ -136,15 +55,6 @@ const OrderMethodForm = ({
           formData={orderMethodInfo}
           handleFormValueChange={handleFormValueChange}
         />
-        <Label>
-            Additional Instructions:
-            <Textarea
-              name="additionalInstructions"
-              onChange={handleFormValueChange}
-              value={orderMethodInfo.additionalInstructions}
-              placeholder="Enter any additional instructions..."
-            ></Textarea>
-          </Label>
       </section>
     </div>
   );

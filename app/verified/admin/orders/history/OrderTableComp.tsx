@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, ReactElement } from "react";
 import {
   Drawer,
   DrawerClose,
@@ -14,7 +14,6 @@ import {
 
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import PricingForm from "@/components/admin-panel/ProductPricingForm";
 import {
   Popover,
   PopoverContent,
@@ -55,6 +54,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
@@ -65,10 +66,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import Papa from "papaparse";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
-
+import { OrderMethods } from "../OrderPaymentFields";
+import { PaymentForm } from "../OrderPaymentFields";
+import { OrderForm } from "../OrderPaymentFields";
 const columns: ColumnDef<unknown, any>[] = [
   {
     id: "select",
@@ -166,7 +168,7 @@ const columns: ColumnDef<unknown, any>[] = [
                 )
                 .map((key: any, index: number) => {
                   return (
-                    <li key={index} className='min-w-[150px]'>
+                    <li key={index} className="min-w-[150px]">
                       <span className="font-bold">{splitCamelCase(key)}</span>:{" "}
                       {orderMethodDetails[key]}
                     </li>
@@ -191,26 +193,30 @@ const columns: ColumnDef<unknown, any>[] = [
       };
 
       const paymentDetails: any = row.getValue("payment_details");
-
+      const validKeys = Object.keys(paymentDetails).filter(
+        (key) =>
+          key !== "paymentType" &&
+          key !== "amountPaid" &&
+          key !== "telegramName"
+      );
       return (
         <div>
           {paymentDetails ? (
             <ul>
-              {Object.keys(paymentDetails)
-                .filter(
-                  (key) => true
-                  // key !== "paymentType" &&
-                  // key !== "amountPaid" &&
-                  // key !== "telegramName"
-                )
-                .map((key: any, index: number) => {
+              {validKeys.length > 0 ? (
+                validKeys.map((key: any, index: number) => {
                   return (
-                    <li key={index} className='min-w-[150px]'>
+                    <li key={index} className="min-w-[150px]">
                       <span className="font-bold">{splitCamelCase(key)}</span>:{" "}
-                      {paymentDetails[key]}
+                      {paymentDetails[key].length > 1
+                        ? paymentDetails[key]
+                        : "- -"}
                     </li>
                   );
-                })}
+                })
+              ) : (
+                <span>No additional details</span>
+              )}
             </ul>
           ) : (
             <span>No payment details</span>
@@ -228,11 +234,14 @@ const columns: ColumnDef<unknown, any>[] = [
         className={`px-2 py-1 rounded text-white text-sm ${
           row.getValue("payment_type") === "cash"
             ? "bg-green-500"
-            : row.getValue("payment_type") === "digital"
+            : row.getValue("payment_type") === "venmo"
               ? "bg-blue-500"
-              : row.getValue("payment_type") === "crypto"
-                ? "bg-yellow-500"
-                : "bg-gray-500"
+              : row.getValue("payment_type") === "zelle" ||
+                  row.getValue("payment_type") === "paypal"
+                ? "bg-purple-500"
+                : row.getValue("payment_type") === "crypto"
+                  ? "bg-yellow-500"
+                  : "bg-gray-500"
         }`}
       >
         {(row.getValue("payment_type") as string).toUpperCase()}
@@ -241,7 +250,16 @@ const columns: ColumnDef<unknown, any>[] = [
   },
   {
     accessorKey: "created_at",
-    header: "Order Date",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        className="pl-0"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Order Date
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => {
       const lastUpdated = new Date(row.getValue("created_at"));
       return (
@@ -265,78 +283,84 @@ export default function OrderTableComp() {
   const [rowSelection, setRowSelection] = useState({});
   const [data, setData] = useState<any[]>([]);
   const [selectedValue, setSelectedValue] = useState<string>("");
-  const [openRowDrawer, setOpenRowDrawer] = useState<boolean>(false);
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<any>({});
-  const [selectedPricingOptions, setSelectedPricingOptions] = useState<any[]>(
-    []
-  );
-  const [csvData, setCsvData] = useState<any[]>([]);
-
-  const [formData, setFormData] = useState<any>({
+  const [formData, setFormData] = useState({
     id: "",
-    name: "",
-    description: "",
-    strain: "", // Default strain value
-    in_stock: "",
-    supplier: "",
+    created_at: "",
+    telegram_name: "",
+    order_method: "",
+    payment_type: "",
+    amount_paid: "",
+    payment_details: {},
+    ordered_items: [],
+    order_method_details: {},
   });
+  const [paymentDetailsState, setPaymentDetailsState] = useState<any>({});
   const { user, secureAccess, loading, error } = useSelector(
     (state: RootState) => state.user
   );
 
+  const fetchUserAndOrders = async () => {
+    const supabase = createClient();
+    if (!user) {
+      router.push("/");
+    } else if (!secureAccess) {
+      router.push("/verified");
+    }
+
+    const savedData = sessionStorage.getItem("orders");
+    if (savedData && JSON.parse(savedData).length > 0) {
+      const parsedData = JSON.parse(savedData);
+      setData(parsedData);
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/orders", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setData(
+          data.data.sort((a: any, b: any) => {
+            const dateA = new Date(a.created_at);
+            const dateB = new Date(b.created_at);
+            return dateB.getTime() - dateA.getTime();
+          })
+        );
+      } else {
+        console.error("Failed to fetch orders");
+      }
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    }
+    // const { data, error: fetchOrdersError } = await supabase
+    //   .from("orders")
+    //   .select();
+
+    // if (data) {
+    //   const jsonString = JSON.stringify(data);
+    //   const sizeInBytes = new TextEncoder().encode(jsonString).length;
+    //   const sizeInMB = sizeInBytes / (1024 * 1024);
+    //   if (sizeInMB <= 2.5) {
+    //     sessionStorage.setItem("orders", JSON.stringify(data));
+    //   }
+    //   console.log(sessionStorage);
+    // }
+    // if (fetchOrdersError) {
+    //   console.warn(fetchOrdersError);
+    // } else {
+    //   console.log(data);
+    //   setData(data);
+    // }
+  };
   useEffect(() => {
     sessionStorage.clear();
-    const fetchUserAndOrders = async () => {
-      const supabase = createClient();
-      if (!user) {
-        router.push("/");
-      } else if (!secureAccess) {
-        router.push("/verified");
-      }
-
-      const savedData = sessionStorage.getItem("orders");
-      if (savedData && JSON.parse(savedData).length > 0) {
-        const parsedData = JSON.parse(savedData);
-        setData(parsedData);
-        return;
-      }
-
-      try {
-        const res = await fetch("/api/orders", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        const data = await res.json();
-        if (res.ok) {
-          setData(data.data.reverse());
-        } else {
-          console.error("Failed to fetch orders");
-        }
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-      }
-      // const { data, error: fetchOrdersError } = await supabase
-      //   .from("orders")
-      //   .select();
-
-      // if (data) {
-      //   const jsonString = JSON.stringify(data);
-      //   const sizeInBytes = new TextEncoder().encode(jsonString).length;
-      //   const sizeInMB = sizeInBytes / (1024 * 1024);
-      //   if (sizeInMB <= 2.5) {
-      //     sessionStorage.setItem("orders", JSON.stringify(data));
-      //   }
-      //   console.log(sessionStorage);
-      // }
-      // if (fetchOrdersError) {
-      //   console.warn(fetchOrdersError);
-      // } else {
-      //   console.log(data);
-      //   setData(data);
-      // }
-    };
     fetchUserAndOrders();
   }, []);
   const table = useReactTable({
@@ -359,9 +383,6 @@ export default function OrderTableComp() {
   });
   const handleOrderSubmit = async (e: any) => {
     e.preventDefault();
-    if (formData.pricing_options.some((option: any) => option.cost == "")) {
-      return { error: "All pricing options must have a cost" };
-    }
     try {
       const res = await fetch("/api/orders", {
         method: "PATCH",
@@ -387,35 +408,96 @@ export default function OrderTableComp() {
     });
   };
 
-  const handleFileChange = (event: any) => {
-    const file = event.target.files[0];
-
-    if (file) {
-      Papa.parse(file, {
-        header: true,
-        complete: function (results) {
-          console.log("Parsed Data:", results.data);
-          setCsvData(results.data);
-          //   for (let i = 0; i < results.data.length; i ++ ){
-          //     console.log(results.data[i])
-          //   }
-        },
-        error: function (error) {
-          console.error("Error parsing CSV:", error);
-        },
-      });
-    }
-  };
   const clearFormData = () => {
-    setFormData({});
+    setFormData({
+      id: "",
+      created_at: "",
+      telegram_name: "",
+      order_method: "",
+      payment_type: "",
+      amount_paid: "",
+      payment_details: {},
+      ordered_items: [],
+      order_method_details: {},
+    });
   };
   const handleOpenDrawer = async (rowData: any) => {
-    console.log(rowData);
-    setFormData({});
-    setSelectedRow(rowData);
-    setOpenRowDrawer(true);
+    setFormData(rowData);
+    // setOpenDialog(true);
+  };
+  const handleEditOrders = async (e: any) => {};
+
+  const handleDeleteOrders = async () => {
+    try {
+      let orderIds = [];
+      for (const i in table.getFilteredSelectedRowModel().rows) {
+        let rawData = table.getFilteredSelectedRowModel().rows[i]
+          .original as any;
+        orderIds.push(rawData.id as string);
+      }
+
+      const res = await fetch("/api/orders", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderIds),
+      });
+      if (res.ok) {
+        setOpenDeleteDialog(false);
+        fetchUserAndOrders();
+        table.resetRowSelection();
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
+  const convertToLocaleDate = (date: string) => {
+    const createdAt = new Date(date);
+    return createdAt.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+    });
+  };
+  const renderPaymentDetails = (paymentType: string): ReactElement => {
+    switch (paymentType) {
+      case "cash":
+        return (
+          <div>
+            <Label>
+              <Input
+                type="text"
+                name="pickupLocation"
+                placeholder="Enter pickup location"
+                onChange={handleFormValueChange}
+                // value={formData.pickupLocation || ""}
+              />
+            </Label>
+          </div>
+        );
+      case "venmo":
+        return (
+          <div>
+            <Label>
+              Venmo User/Email/Phone
+              <Input
+                type="text"
+                name="pickupLocation"
+                placeholder="Enter pickup location"
+                onChange={handleFormValueChange}
+                // value={formData.pickupLocation || ""}
+              />
+            </Label>
+          </div>
+        );
+      // case "venmo":
+      //   return
+      default:
+        return <div></div>;
+    }
+  };
   return (
     <main className="pr-6">
       <div className="flex justify-between py-4">
@@ -424,7 +506,7 @@ export default function OrderTableComp() {
             Orders
           </h2>
           <Input
-            placeholder="Filter by name..."
+            placeholder="Filter by telegram name..."
             value={
               (table.getColumn("telegram_name")?.getFilterValue() as string) ??
               ""
@@ -446,24 +528,20 @@ export default function OrderTableComp() {
                 table.getColumn("category")?.setFilterValue(value); // Apply filtering based on the selected value
               }}
             >
-              {[
-                { label: "All", value: "" },
-                { label: "Flower", value: "flower" },
-                { label: "Condiments", value: "condiments" },
-              ].map((strain) => (
+              {["latestFirst", "oldestFirst"].map((sortOption) => (
                 <div
-                  key={strain.label}
+                  key={sortOption}
                   className="flex items-center gap-x-2 p-2 cursor-pointer hover:bg-background"
                   onClick={() => {
-                    setSelectedValue(strain.value); // Set the selected value when the div is clicked
-                    table.getColumn("strain")?.setFilterValue(strain.value); // Apply filtering
+                    setSelectedValue(sortOption);
+                    handleDataSort(sortOption);
                   }}
                 >
                   <RadioGroupItem
-                    value={strain.value}
-                    checked={selectedValue === strain.value}
+                    value={sortOption}
+                    checked={selectedValue === sortOption}
                   />
-                  <Label htmlFor={strain.value}>{strain.label}</Label>
+                  <Label htmlFor={sortOption}>{sortOption}</Label>
                 </div>
               ))}
             </RadioGroup>
@@ -543,14 +621,21 @@ export default function OrderTableComp() {
                 return (
                   <TableRow
                     key={row.id}
-                    className="cursor-pointer hover:bg-background"
-                    onClick={() => {
-                      handleOpenDrawer(row.original);
-                    }}
+                    className=" "
                     data-state={row.getIsSelected() && "selected"}
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
+                    {row.getVisibleCells().map((cell, i: number) => (
+                      <TableCell
+                        key={cell.id}
+                        // className={
+                        //   i > 1 ? "cursor-pointer hover:bg-background" : ""
+                        // }
+                        // onClick={() => {
+                        //   if (i > 1) {
+                        //     handleOpenDrawer(row.original);
+                        //   }
+                        // }}
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -573,105 +658,101 @@ export default function OrderTableComp() {
           </TableBody>
         </Table>
       </div>
-      {/* <Drawer
-        open={openRowDrawer}
+      <Dialog
+        open={openDialog}
         onOpenChange={(open) => {
           if (!open) {
             clearFormData();
-            setSelectedPricingOptions([]);
           }
-          setOpenRowDrawer(open);
+          setOpenDialog(open);
         }}
       >
-        <DrawerContent className=" ">
-          <DrawerHeader>
+        <DialogContent className="min-w-[65vw]">
+          <DialogHeader>
             <form
               id="inven-form-existing"
               className="min-h-[70vh] max-h-[70vh] overflow-y-scroll"
             >
-              <DrawerTitle asChild>
-                <p className="text-muted-foreground text-sm p-1">
-                  ID: {selectedRow.id}
+              <DialogTitle className="flex flex-col pl-1">
+                <p className="text-muted-foreground text-sm text-left">
+                  Order ID: {formData.id}
                 </p>
-              </DrawerTitle>
-              <DrawerDescription asChild>
-                <div className="grid-container">
-                  <div className="flex flex-col">
-                    <section>
-                      <Label htmlFor="name">Product Name</Label>
-                      <Input
-                        type="text"
-                        name="name"
-                        placeholder="Product Name"
-                        value={formData.name}
-                        onChange={handleFormValueChange}
-                      />
-                    </section>
-                    <section>
-                      <Label htmlFor="supplier">Supplier</Label>
-                      <Input
-                        type="text"
-                        name="supplier"
-                        placeholder="Supplier Name"
-                        value={formData.supplier}
-                        onChange={handleFormValueChange}
-                      />
-                    </section>
-                    <section>
-                      <Label htmlFor="strain">Strain</Label>
-                      <select
-                        name="strain"
-                        required
-                        value={formData.strain.toLowerCase()}
-                        onChange={handleFormValueChange}
-                        className="border rounded p-2"
-                      >
-                        <option value="sativa">Sativa</option>
-                        <option value="indica">Indica</option>
-                        <option value="hybrid">Hybrid</option>
-                      </select>
-                    </section>
-                    <section className="flex flex-col h-full">
-                      <Label htmlFor="description">Description</Label>
-                      <textarea
-                        name="description"
-                        placeholder="Product Description"
-                        value={formData.description}
-                        onChange={handleFormValueChange}
-                        className="h-full border p-2 rounded-md"
-                      />
-                    </section>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <Label htmlFor="pricingOptions">Pricing Options</Label>
-                    <div className="flex flex-col gap-2 ">
-                      <PricingForm
-                        pricingOptions={formData.pricing_options}
-                        setPricingOptions={(updatedOptions: any) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            pricing_options: updatedOptions,
-                          }))
-                        }
-                      />
-                    </div>
-                  </div>
+                <p className="text-muted-foreground text-sm">
+                  Date: {convertToLocaleDate(formData.created_at)}
+                </p>
+              </DialogTitle>
+              <DialogDescription
+                asChild
+                className="text-foreground order-dialog"
+              >
+                <div className="flex flex-col">
+                  <section>
+                    <Label htmlFor="telegram_name">Telegram Name</Label>
+                    <Input
+                      type="text"
+                      name="telegram_name"
+                      placeholder="Telegram Name"
+                      value={formData.telegram_name}
+                      onChange={handleFormValueChange}
+                    />
+                  </section>
+                  <section>
+                    <Label htmlFor="order_method">Order Method</Label>
+                    <select
+                      name="order_method"
+                      required
+                      value={formData.order_method}
+                      onChange={handleFormValueChange}
+                      className="border rounded p-2"
+                    >
+                      <option value="pickup">Pickup</option>
+                      <option value="delivery">Delivery</option>
+                      <option value="shipping">Shipping</option>
+                    </select>
+                  </section>
+                  <section>
+                    <Label htmlFor="payment_type">Payment Type</Label>
+                    <select
+                      name="payment_type"
+                      required
+                      value={formData.payment_type}
+                      onChange={handleFormValueChange}
+                      className="border rounded p-2"
+                    >
+                      <option value="cash">Cash</option>
+                      <option value="zelle">Zelle</option>
+                      <option value="venmo">Venmo</option>
+                      <option value="paypal">Paypal</option>
+                      <option value="crypto">Crypto</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </section>
+                  {/* <section className="flex flex-col h-full">
+                    <Label htmlFor="description">Description</Label>
+                    <textarea
+                      name="description"
+                      placeholder="Product Description"
+                      value={formData.description}
+                      onChange={handleFormValueChange}
+                      className="h-full border p-2 rounded-md"
+                    />
+                  </section> */}
                 </div>
-              </DrawerDescription>
+              </DialogDescription>
             </form>
-          </DrawerHeader>
-          <DrawerFooter className="flex flex-row">
-            <DrawerClose onClick={() => setOpenRowDrawer(false)} asChild>
+          </DialogHeader>
+          <DialogFooter className="flex flex-row">
+            <DialogClose onClick={() => setOpenDialog(false)} asChild>
               <Button className="flex-1" variant="outline">
                 Cancel
               </Button>
-            </DrawerClose>
+            </DialogClose>
             <Button onClick={handleOrderSubmit} className="flex-1">
               Save
             </Button>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer> */}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <section className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
           <div>
@@ -679,14 +760,22 @@ export default function OrderTableComp() {
             {table.getFilteredRowModel().rows.length} row(s).
           </div>
 
-          <Dialog>
+          <Dialog
+            open={openDeleteDialog}
+            onOpenChange={(open) => {
+              if (!open) {
+                clearFormData();
+              }
+              setOpenDeleteDialog(open);
+            }}
+          >
             <DialogTrigger asChild>
               {table.getFilteredSelectedRowModel().rows.length > 0 && (
                 <Button
-                  onClick={() =>
-                    console.log(table.getFilteredSelectedRowModel().rows.length)
-                  }
-                  className="bg-red-600 hover:bg-red-500 mt-1"
+                  // onClick={() =>
+                  //   console.log(table.getFilteredSelectedRowModel().rows.length)
+                  // }
+                  className="bg-red-500 hover:bg-red-600 mt-1 text-white"
                 >
                   Delete {table.getFilteredSelectedRowModel().rows.length}{" "}
                   order(s)
@@ -702,7 +791,10 @@ export default function OrderTableComp() {
                 <DialogDescription>
                   This action is <span className="text-red-600">permanent</span>{" "}
                   and can not be undone.
-                  <Button className="w-full block mt-2 bg-red-600 hover:bg-red-500">
+                  <Button
+                    onClick={handleDeleteOrders}
+                    className="w-full block mt-2 bg-red-600 hover:bg-red-500"
+                  >
                     Confirm
                   </Button>
                 </DialogDescription>

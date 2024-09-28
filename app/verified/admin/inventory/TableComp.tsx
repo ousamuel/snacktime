@@ -423,14 +423,14 @@ export default function TableComp({ product }: { product: string }) {
     }
   };
   return (
-    <main className="pr-6">
+    <main className="md:pr-6">
       {/* <div>
           <h1>Upload CSV</h1>
           <input type="file" accept=".csv" onChange={handleFileChange} />
           <button onClick={handleSubmit}>Submit to Supabase</button>
         </div> */}
-      <div className="flex justify-between py-4">
-        <section>
+      <div className="flex justify-between py-4 pr-2 md:pr-0">
+        <section className="">
           <h2 className="scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0">
             Inventory: {product.toUpperCase()}
           </h2>
@@ -622,7 +622,7 @@ export default function TableComp({ product }: { product: string }) {
                 return (
                   <TableRow
                     key={row.id}
-                    className="cursor-pointer hover:bg-background"
+                    className="cursor-pointer hover:bg-background "
                     onClick={() => {
                       handleOpenDrawer(row.original);
                     }}
@@ -664,7 +664,7 @@ export default function TableComp({ product }: { product: string }) {
       >
         <DrawerContent>
           <DrawerHeader>
-            <form className="overflow-y-scroll">
+            <form className="overflow-y-scroll ">
               <DrawerTitle asChild>
                 <p className="text-muted-foreground text-sm p-1">
                   {/* ID: {selectedRow.id} */}
@@ -713,7 +713,7 @@ export default function TableComp({ product }: { product: string }) {
                         {/* Label for the input */}
                         <Label
                           htmlFor={columnKey}
-                          className="text-gray-700 text-sm lg:text-md pl-1"
+                          className="text-foreground text-sm lg:text-md pl-1"
                         >
                           {column.header}
                         </Label>

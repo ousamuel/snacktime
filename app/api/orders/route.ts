@@ -172,7 +172,7 @@ export async function DELETE(request: Request) {
     const { data, error } = await supabase
       .from("orders")
       .delete()
-      .eq("id", formData.id);
+      .in("id", formData);
 
     if (error) {
       console.log(error);

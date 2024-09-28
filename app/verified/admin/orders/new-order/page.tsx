@@ -20,16 +20,18 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 import PaymentMethodForm from "./PaymentForm";
 import OrderMethodForm from "./OrderMethodForm";
-
+import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 export default function NewOrdersPage() {
+  const { toast } = useToast();
   const [paymentInfo, setPaymentInfo] = useState<any>({
     paymentType: "cash",
     telegramName: "",
     amountPaid: "",
-    additionDetails: "",
+    additionalDetails: "",
   });
   const [orderMethodInfo, setOrderMethodInfo] = useState<any>({
-    paymentType: "cash",
+    orderMethod: "pickup",
   });
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [products, setProducts] = useState<any>([]);
@@ -76,7 +78,7 @@ export default function NewOrdersPage() {
       return;
     }
     const formData = { paymentInfo, orderedItems, orderMethodInfo };
-    console.log(formData)
+    console.log(formData);
     // user_id uuid null default auth.uid (),
     // product_id uuid null,
     // amount_paid real null,
@@ -105,12 +107,25 @@ export default function NewOrdersPage() {
       console.error("Error inserting order:", error);
     } finally {
       setSubmittingOrder(false);
-      // clearFormData();
+      clearFormData();
+      toast({
+        title: "Order successfully added",
+        description: (
+          <ul>
+            <li>Customer: {paymentInfo.telegramName}</li>
+            <li>Total: ${paymentInfo.amountPaid}</li>
+          </ul>
+        ),
+        // action: <ToastAction altText="Order submitted">Undo</ToastAction>,
+      });
     }
   };
   const clearFormData = () => {
     setOrderedItems([]);
     setOrderTotal(0);
+    setOrderMethodInfo({
+      orderMethod: "pickup",
+    });
     setPaymentInfo({
       paymentType: "cash",
       telegramName: "",

@@ -203,3 +203,8 @@ textarea:focus {
 .payment-form input {
   margin-bottom: 10px;
 }
+
+.order-dialog section {
+  min-width: 150px;
+  flex-grow: 1;
+}
