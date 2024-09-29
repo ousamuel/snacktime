@@ -111,21 +111,30 @@ export default function TableComp({ product }: { product: string }) {
       },
     };
   };
+
   const columns: ColumnDef<unknown, any>[] = [
-    // {
-    //   accessorKey: "name",
-    //   header: ({ column }) => (
-    //     <Button
-    //       variant="ghost"
-    //       className="pl-0"
-    //       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-    //     >
-    //       Name
-    //       <ArrowUpDown className="ml-2 h-4 w-4" />
-    //     </Button>
-    //   ),
-    //   cell: ({ row }) => <div>{row.getValue("name")}</div>,
-    // },
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
     {
       accessorKey: "name",
       header: "Name",
@@ -223,7 +232,7 @@ export default function TableComp({ product }: { product: string }) {
   const [selectedValue, setSelectedValue] = useState<string>("");
   const [openRowDrawer, setOpenRowDrawer] = useState<boolean>(false);
   const [selectedRow, setSelectedRow] = useState<any>({});
-  const [csvData, setCsvData] = useState<any[]>([]);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
 
   const [formData, setFormData] = useState<any>({
     id: "",
@@ -249,6 +258,32 @@ export default function TableComp({ product }: { product: string }) {
   const { user, secureAccess, loading, error } = useSelector(
     (state: RootState) => state.user
   );
+
+  const handleDeleteProducts = async () => {
+    try {
+      let productIds = [];
+      for (const i in table.getFilteredSelectedRowModel().rows) {
+        let rawData = table.getFilteredSelectedRowModel().rows[i]
+          .original as any;
+        productIds.push(rawData.id as string);
+      }
+
+      const res = await fetch("/api/products", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(productIds),
+      });
+      if (res.ok) {
+        setOpenDeleteDialog(false);
+        fetchUserAndFlower();
+        table.resetRowSelection();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const fetchUserAndFlower = async () => {
     const supabase = createClient();
@@ -357,25 +392,6 @@ export default function TableComp({ product }: { product: string }) {
     []
   ); // Adjust debounce time as necessary
 
-  const handleFileChange = (event: any) => {
-    const file = event.target.files[0];
-
-    if (file) {
-      Papa.parse(file, {
-        header: true,
-        complete: function (results) {
-          console.log("Parsed Data:", results.data);
-          setCsvData(results.data);
-          //   for (let i = 0; i < results.data.length; i ++ ){
-          //     console.log(results.data[i])
-          //   }
-        },
-        error: function (error) {
-          console.error("Error parsing CSV:", error);
-        },
-      });
-    }
-  };
   const clearFormData = () => {
     setFormData({
       id: null,
@@ -485,78 +501,6 @@ export default function TableComp({ product }: { product: string }) {
           >
             Add New
           </Button>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button className="px-2 h-fit  border border-accent">
-                dialog trigger
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-full w-5/6 max-h-[calc(100vh-100px)] overflow-y-scroll">
-              <DialogTitle asChild>
-                <h1 className="text-2xl font-medium">Add New Item</h1>
-              </DialogTitle>
-              <form
-                onSubmit={handleProductSubmit}
-                className="flex flex-col w-full p-4 gap-2 [&>input]:mb-4 text-foreground"
-              >
-                <div className="flex flex-col gap-3">
-                  {/* <div className="flex flex-col gap-2 lg:flex-row">
-                    <section className="flex flex-1 flex-col [&>input]:mb-3">
-                      <Label htmlFor="name">Product Name</Label>
-                      <Input
-                        name="name"
-                        placeholder="name"
-                        value={formData.name}
-                        onChange={handleFormValueChange}
-                      />
-                      <Label htmlFor="description">Description</Label>
-                      <Textarea
-                        name="description"
-                        value={formData.description}
-                        onChange={handleFormValueChange}
-                        placeholder="Product Description"
-                        className=""
-                      />
-                      <div className="flex flex-col gap-2">
-                        <Label htmlFor="strain">Strain</Label>
-                        <select
-                          name="strain"
-                          required
-                          value={formData.strain}
-                          onChange={handleFormValueChange}
-                          className="border rounded p-2"
-                        >
-                          <option value="sativa">Sativa</option>
-                          <option value="indica">Indica</option>
-                          <option value="hybrid">Hybrid</option>
-                        </select>
-                      </div>
-                    </section>
-                    <section className="flex flex-col flex-1">
-                      <h4 className="text-center underline">Pricing Options</h4>
-                      <PricingForm
-                        pricingOptions={formData.pricing_options}
-                        setPricingOptions={(updatedOptions: any) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            pricing_options: updatedOptions,
-                          }))
-                        }
-                      />
-                    </section>
-                  </div> */}
-                  <SubmitButton
-                    pendingText="Saving..."
-                    formAction={addProductAction}
-                  >
-                    Save
-                  </SubmitButton>
-                  {/* <FormMessage message={searchParams} /> */}
-                </div>
-              </form>
-              <DialogDescription className="h-0" />
-            </DialogContent>
-          </Dialog>{" "}
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className="">
@@ -622,14 +566,24 @@ export default function TableComp({ product }: { product: string }) {
                 return (
                   <TableRow
                     key={row.id}
-                    className="cursor-pointer hover:bg-background "
-                    onClick={() => {
-                      handleOpenDrawer(row.original);
-                    }}
+                    // className="cursor-pointer hover:bg-background "
+                    // onClick={() => {
+                    //   handleOpenDrawer(row.original);
+                    // }}
                     data-state={row.getIsSelected() && "selected"}
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
+                    {row.getVisibleCells().map((cell, i: number) => (
+                      <TableCell
+                        key={cell.id}
+                        className={
+                          i > 1 ? "cursor-pointer hover:bg-background" : ""
+                        }
+                        onClick={() => {
+                          if (i > 1) {
+                            handleOpenDrawer(row.original);
+                          }
+                        }}
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -671,9 +625,11 @@ export default function TableComp({ product }: { product: string }) {
                 </p>
               </DrawerTitle>
               <DrawerDescription asChild>
-                {/* Dynamically create form fields based on the columns */}
                 <div className="flex">
-                  {columns.map((column: any) => {
+                  {columns.map((column: any, index: number) => {
+                    if (index == 0) {
+                      return;
+                    }
                     const columnKey = column.accessorKey;
                     const columnValue = selectedRow[columnKey]; // Fetch the corresponding row data
 
@@ -681,7 +637,7 @@ export default function TableComp({ product }: { product: string }) {
                     if (columnKey == "category") {
                       return (
                         <div
-                          key={columnKey}
+                          key={`${columnKey}-${index}`}
                           className="flex flex-col justify-end"
                         >
                           <Label
@@ -707,7 +663,7 @@ export default function TableComp({ product }: { product: string }) {
                     }
                     return (
                       <div
-                        key={columnKey}
+                        key={`${columnKey}-${index}`}
                         className="flex flex-col justify-end"
                       >
                         {/* Label for the input */}
@@ -746,11 +702,12 @@ export default function TableComp({ product }: { product: string }) {
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
-      <div className="flex items-center justify-end space-x-2 py-4">
+      <section className="flex items-center justify-end space-x-2 ">
         <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
+
         <div className="space-x-2">
           <Button
             variant="outline"
@@ -769,7 +726,48 @@ export default function TableComp({ product }: { product: string }) {
             Next
           </Button>
         </div>
-      </div>
+      </section>
+      <Dialog
+        open={openDeleteDialog}
+        onOpenChange={(open) => {
+          if (!open) {
+            clearFormData();
+          }
+          setOpenDeleteDialog(open);
+        }}
+      >
+        <DialogTrigger asChild>
+          {table.getFilteredSelectedRowModel().rows.length > 0 && (
+            <Button
+              // onClick={() =>
+              //   console.log(table.getFilteredSelectedRowModel().rows.length)
+              // }
+              className="bg-red-500 hover:bg-red-600 mt-1 text-white"
+            >
+              Delete {table.getFilteredSelectedRowModel().rows.length}{" "}
+              product(s)
+            </Button>
+          )}
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Confirm deletion of{" "}
+              {table.getFilteredSelectedRowModel().rows.length} product(s){" "}
+            </DialogTitle>
+            <DialogDescription>
+              This action is <span className="text-red-600">permanent</span> and
+              can not be undone.
+              <Button
+                onClick={handleDeleteProducts}
+                className="w-full block mt-2 bg-red-600 hover:bg-red-500"
+              >
+                Confirm
+              </Button>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }

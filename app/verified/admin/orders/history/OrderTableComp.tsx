@@ -753,54 +753,12 @@ export default function OrderTableComp() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <section className="flex items-center justify-end space-x-2 py-4">
+      <section className="flex items-center justify-end space-x-2 pt-4">
         <div className="flex-1 text-sm text-muted-foreground">
           <div>
             {table.getFilteredSelectedRowModel().rows.length} of{" "}
             {table.getFilteredRowModel().rows.length} row(s).
           </div>
-
-          <Dialog
-            open={openDeleteDialog}
-            onOpenChange={(open) => {
-              if (!open) {
-                clearFormData();
-              }
-              setOpenDeleteDialog(open);
-            }}
-          >
-            <DialogTrigger asChild>
-              {table.getFilteredSelectedRowModel().rows.length > 0 && (
-                <Button
-                  // onClick={() =>
-                  //   console.log(table.getFilteredSelectedRowModel().rows.length)
-                  // }
-                  className="bg-red-500 hover:bg-red-600 mt-1 text-white"
-                >
-                  Delete {table.getFilteredSelectedRowModel().rows.length}{" "}
-                  order(s)
-                </Button>
-              )}
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>
-                  Confirm deletion of{" "}
-                  {table.getFilteredSelectedRowModel().rows.length} order(s){" "}
-                </DialogTitle>
-                <DialogDescription>
-                  This action is <span className="text-red-600">permanent</span>{" "}
-                  and can not be undone.
-                  <Button
-                    onClick={handleDeleteOrders}
-                    className="w-full block mt-2 bg-red-600 hover:bg-red-500"
-                  >
-                    Confirm
-                  </Button>
-                </DialogDescription>
-              </DialogHeader>
-            </DialogContent>
-          </Dialog>
         </div>
         <div className="space-x-2">
           <Button
@@ -821,6 +779,46 @@ export default function OrderTableComp() {
           </Button>
         </div>
       </section>
+      <Dialog
+        open={openDeleteDialog}
+        onOpenChange={(open) => {
+          if (!open) {
+            clearFormData();
+          }
+          setOpenDeleteDialog(open);
+        }}
+      >
+        <DialogTrigger asChild>
+          {table.getFilteredSelectedRowModel().rows.length > 0 && (
+            <Button
+              // onClick={() =>
+              //   console.log(table.getFilteredSelectedRowModel().rows.length)
+              // }
+              className="bg-red-500 hover:bg-red-600 mt-1 text-white"
+            >
+              Delete {table.getFilteredSelectedRowModel().rows.length} order(s)
+            </Button>
+          )}
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Confirm deletion of{" "}
+              {table.getFilteredSelectedRowModel().rows.length} order(s){" "}
+            </DialogTitle>
+            <DialogDescription>
+              This action is <span className="text-red-600">permanent</span> and
+              can not be undone.
+              <Button
+                onClick={handleDeleteOrders}
+                className="w-full block mt-2 bg-red-600 hover:bg-red-500"
+              >
+                Confirm
+              </Button>
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }

@@ -95,3 +95,35 @@ export async function PATCH(request: Request) {
     );
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const formData = await request.json();
+    const supabase = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const { data, error } = await supabase
+      .from("products")
+      .delete()
+      .in("id", formData);
+
+    if (error) {
+      console.log(error);
+      return NextResponse.json({ error: "Error deleting" });
+    }
+    return NextResponse.json(
+      { data },
+      {
+        status: 201,
+      }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { error: "An error occurred" },
+      {
+        status: 500,
+      }
+    );
+  }
+}
