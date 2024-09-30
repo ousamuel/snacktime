@@ -354,6 +354,9 @@ export default function TableComp({ product }: { product: string }) {
   });
   const handleProductSubmit = async (e: any) => {
     e.preventDefault();
+    if (!formData.category) {
+      formData.category = "flower";
+    }
     if (!formData.name) {
       toast({
         title: "Please include a product name",
@@ -366,6 +369,8 @@ export default function TableComp({ product }: { product: string }) {
         // action: <ToastAction altText="Order submitted">Undo</ToastAction>,
       });
       return;
+    } else {
+      formData.name = formData.name.toLowerCase();
     }
     if (!formData.id) {
       delete formData["id"];
