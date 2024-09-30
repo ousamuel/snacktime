@@ -46,10 +46,13 @@ export function Menu({ isOpen }: MenuProps) {
   const dispatch = useDispatch();
   useEffect(() => {
     if (!user) {
-      dispatch(fetchUserAndCheckAdmin());
+      dispatch(fetchUser());
+    } else if (!secureAccess) {
+      checkAdmin(user.id);
     }
   }, [dispatch]);
-  const fetchUserAndCheckAdmin = (): any => {
+  // Fetch the user session
+  const fetchUser = (): any => {
     return async (dispatch: Dispatch) => {
       try {
         // Start loading
@@ -62,28 +65,39 @@ export function Menu({ isOpen }: MenuProps) {
         if (userResponse.ok) {
           // Dispatch user data to the store
           dispatch(setUser(userData.user));
-
-          // Check if the user is an admin
-          const adminResponse = await fetch("/api/admin", {
-            method: "POST",
-            body: JSON.stringify({ userId: userData.user.id }),
-          });
-          const adminData = await adminResponse.json();
-
-          if (adminResponse.ok && adminData.success) {
-            dispatch(setSecureAccess(true)); // User has admin access
-          } else {
-            dispatch(setSecureAccess(false)); // User does not have admin access
-          }
+          return userData.user; // Return the user data for further use
         } else {
           throw new Error(userData.error || "Failed to fetch user data");
         }
       } catch (error: any) {
         dispatch(setError(error.message));
         signOutAction();
+        return null;
       } finally {
-        dispatch(setLoading(false)); // Stop loading
+        dispatch(setLoading(false));
         router.push("/verified/home");
+      }
+    };
+  };
+
+  // Check if the user is an admin
+  const checkAdmin = (userId: string): any => {
+    return async (dispatch: Dispatch) => {
+      try {
+        // Check if the user is an admin
+        const adminResponse = await fetch("/api/admin", {
+          method: "POST",
+          body: JSON.stringify({ userId }),
+        });
+        const adminData = await adminResponse.json();
+
+        if (adminResponse.ok && adminData.success) {
+          dispatch(setSecureAccess(true)); // User has admin access
+        } else {
+          dispatch(setSecureAccess(false)); // User does not have admin access
+        }
+      } catch (error: any) {
+        dispatch(setError(error.message));
       }
     };
   };
