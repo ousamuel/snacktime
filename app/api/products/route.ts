@@ -46,7 +46,13 @@ export async function POST(request: Request) {
     const { error } = await supabase.from("products").insert(formData);
     if (error) {
       console.log(error);
-      return NextResponse.json({ error: "Error inserting" });
+      if (error.code == "23505") {
+        return NextResponse.json({
+          status: 400,
+          error: "Product Name already in use",
+        });
+      }
+      return NextResponse.json({ status: 400, error: error.message });
     }
     return NextResponse.json({ status: 201, success: "Successful insert" });
   } catch (error) {

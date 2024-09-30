@@ -53,7 +53,7 @@ const Account = () => {
   async function createReferral() {
     try {
       const referralCode = uuidv4();
-      const referralLink = `http://localhost:3000/sign-up?referralCode=${referralCode}`;
+      const referralLink = `https://snacktimeworldwide.com/sign-up?referralCode=${referralCode}`;
       const expiresAt = new Date();
       expiresAt.setMinutes(expiresAt.getMinutes() + minutesTillExpire);
       console.log(expiresAt);

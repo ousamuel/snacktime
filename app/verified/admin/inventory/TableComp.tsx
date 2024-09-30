@@ -13,19 +13,13 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import mockProducts from "./mockProducts.json";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import PricingForm from "@/components/admin-panel/ProductPricingForm";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
-import { SubmitButton } from "@/components/submit-button";
-import { ContentLayout } from "@/components/admin-panel/content-layout";
-import Link from "next/link";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -38,17 +32,11 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  ArrowUpDown,
-  ChevronDown,
-  MoreHorizontal,
-  SquareX,
-} from "lucide-react";
+import { ArrowUpDown, ChevronDown } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { createClient } from "@/utils/supabase/client";
-import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { addProductAction } from "@/app/actions";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -67,7 +55,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import Papa from "papaparse";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/store";
 
@@ -242,6 +229,7 @@ export default function TableComp({ product }: { product: string }) {
     // },
   ];
   const router = useRouter();
+  const { toast } = useToast();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -327,7 +315,6 @@ export default function TableComp({ product }: { product: string }) {
       .from("products")
       .select()
       .filter("category", product === "flower" ? "eq" : "neq", "flower");
-    console.log(data);
     if (data) {
       const jsonString = JSON.stringify(data);
       const sizeInBytes = new TextEncoder().encode(jsonString).length;
@@ -368,7 +355,16 @@ export default function TableComp({ product }: { product: string }) {
   const handleProductSubmit = async (e: any) => {
     e.preventDefault();
     if (!formData.name) {
-      console.log("need product name");
+      toast({
+        title: "Please include a product name",
+        description: (
+          <ul>
+            {/* <li>Customer: {paymentInfo.telegramName}</li>
+            <li>Total: ${paymentInfo.amountPaid}</li> */}
+          </ul>
+        ),
+        // action: <ToastAction altText="Order submitted">Undo</ToastAction>,
+      });
       return;
     }
     if (!formData.id) {
@@ -382,18 +378,30 @@ export default function TableComp({ product }: { product: string }) {
         },
         body: JSON.stringify(formData),
       });
-      // const data = await res.json();
-      if (res.ok) {
+      const data = await res.json();
+      console.log(data);
+      if (data.success) {
         fetchUserAndFlower();
         clearFormData();
         setOpenRowDrawer(false);
-      } else {
-        console.error("Failed to fetch products");
+      } else if (data.error) {
+        toast({
+          title: data.error,
+          description: (
+            <ul>
+              "{formData.name}"
+              {/* <li>Customer: {paymentInfo.telegramName}</li>
+              <li>Total: ${paymentInfo.amountPaid}</li> */}
+            </ul>
+          ),
+          // action: <ToastAction altText="Order submitted">Undo</ToastAction>,
+        });
       }
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error("Error posting products:", error);
     }
   };
+
   const handleFormValueChange = (e: any) => {
     const { name, value } = e.target;
     debounceSetFormData(name, value);
@@ -434,7 +442,7 @@ export default function TableComp({ product }: { product: string }) {
       // description: rowData.description,
       // strain: rowData.strain,
       // in_stock: rowData.in_stock,
-      category: rowData.category,
+      category: rowData.category ? rowData.category : "flower",
       // pricing_options: rowData.pricing_options,
       // supplier: rowData.supplier || "",
       eighth: rowData.eighth,
@@ -627,7 +635,6 @@ export default function TableComp({ product }: { product: string }) {
       <Drawer
         open={openRowDrawer}
         onOpenChange={(open) => {
-          console.log(formData);
           if (!open) {
             clearFormData();
           }
@@ -638,12 +645,13 @@ export default function TableComp({ product }: { product: string }) {
           <DrawerHeader>
             <form className="overflow-y-scroll ">
               <DrawerTitle asChild>
-                <p className="text-muted-foreground text-sm p-1">
+                <p className="text-muted-foreground text-base p-1">
                   {/* ID: {selectedRow.id} */}
                 </p>
               </DrawerTitle>
-              <DrawerDescription asChild>
-                <div className="flex">
+              <DrawerDescription asChild className="">
+                <div className="flex py-10 ">
+                  {/* <div className="flex flex-col gap-1 w-[500px]"> */}
                   {columns.map((column: any, index: number) => {
                     if (index == 0) {
                       return;
@@ -660,7 +668,7 @@ export default function TableComp({ product }: { product: string }) {
                         >
                           <Label
                             htmlFor="category"
-                            className="text-foreground text-sm lg:text-md pr-4 pl-1 "
+                            className="text-foreground pr-4 pl-1 "
                           >
                             Category
                           </Label>
@@ -669,7 +677,7 @@ export default function TableComp({ product }: { product: string }) {
                             required
                             defaultValue={columnValue || ""}
                             onChange={handleFormValueChange}
-                            className="block w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2 h-10 rounded-md bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible: focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="block min-w-[150px] w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2 h-10 rounded-md bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible: focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             <option value="flower">Flower</option>
                             <option value="edible">Edible</option>
@@ -682,14 +690,22 @@ export default function TableComp({ product }: { product: string }) {
                     return (
                       <div
                         key={`${columnKey}-${index}`}
-                        className="flex flex-col justify-end"
+                        className="flex flex-col justify-end grow"
                       >
                         {/* Label for the input */}
                         <Label
                           htmlFor={columnKey}
                           className="text-foreground text-sm lg:text-md pl-1"
                         >
-                          {column.header}
+                          {/* let key = product == "flower" ? "total_lb_sold" : "total_units_sold"; */}
+
+                          {columnKey == "total_order_count"
+                            ? "Total Orders"
+                            : columnKey == "total_lb_sold"
+                              ? "Sold (lbs)"
+                              : columnKey == "total_units_sold"
+                                ? "Sold (units)"
+                                : column.header}
                         </Label>
                         {/* Input field */}
                         <Input
@@ -789,81 +805,3 @@ export default function TableComp({ product }: { product: string }) {
     </main>
   );
 }
-
-// <div className="grid-container">
-//                   <div className="flex flex-col">
-//                     <section>
-//                       <Label htmlFor="name">Product Name</Label>
-//                       <Input
-//                         type="text"
-//                         name="name"
-//                         placeholder="Product Name"
-//                         value={formData.name}
-//                         onChange={handleFormValueChange}
-//                       />
-//                     </section>
-//                     <section>
-//                       <Label htmlFor="supplier">Supplier</Label>
-//                       <Input
-//                         type="text"
-//                         name="supplier"
-//                         placeholder="Supplier Name"
-//                         value={formData.supplier}
-//                         onChange={handleFormValueChange}
-//                       />
-//                     </section>
-//                     <section>
-//                       <Label htmlFor="strain">Strain</Label>
-//                       <select
-//                         name="strain"
-//                         required
-//                         value={formData.strain.toLowerCase()}
-//                         onChange={handleFormValueChange}
-//                         className="border rounded p-2"
-//                       >
-//                         <option value="sativa">Sativa</option>
-//                         <option value="indica">Indica</option>
-//                         <option value="hybrid">Hybrid</option>
-//                       </select>
-//                     </section>
-//                     <section>
-//                       <Label htmlFor="category">Category</Label>
-//                       <select
-//                         name="category"
-//                         required
-//                         value={formData.category.toLowerCase()}
-//                         onChange={handleFormValueChange}
-//                         className="border rounded p-2"
-//                       >
-//                         <option value="flower">Flower</option>
-//                         <option value="edible">Edible</option>
-//                         <option value="vape">Vape</option>
-//                         <option value="concentrate">Concentrate</option>
-//                       </select>
-//                     </section>
-//                     <section id="description" className="flex flex-col h-full">
-//                       <Label htmlFor="description">Description</Label>
-//                       <textarea
-//                         name="description"
-//                         placeholder="Product Description"
-//                         value={formData.description}
-//                         onChange={handleFormValueChange}
-//                         className="h-full border p-2 rounded-md"
-//                       />
-//                     </section>
-//                   </div>
-//                   <div className="flex flex-col gap-2">
-//                     <Label htmlFor="pricingOptions">Pricing Options</Label>
-//                     <div className="flex flex-col gap-2 ">
-//                       <PricingForm
-//                         pricingOptions={formData.pricing_options}
-//                         setPricingOptions={(updatedOptions: any) =>
-//                           setFormData((prev) => ({
-//                             ...prev,
-//                             pricing_options: updatedOptions,
-//                           }))
-//                         }
-//                       />
-//                     </div>
-//                   </div>
-//                 </div>

@@ -5,10 +5,7 @@ import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import {
-  Drawer,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+import { Drawer, DrawerTrigger } from "@/components/ui/drawer";
 import { headers } from "next/headers";
 import { encodedRedirect } from "@/utils/utils";
 import { redirect } from "next/navigation";
@@ -30,8 +27,8 @@ export default async function Signup({
   const signUpAction = async (formData: FormData) => {
     "use server";
     const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-      process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
     const email = formData.get("email")?.toString();
     const password = formData.get("password")?.toString();

@@ -21,7 +21,6 @@ import { RootState } from "@/lib/store";
 import PaymentMethodForm from "./PaymentForm";
 import OrderMethodForm from "./OrderMethodForm";
 import { useToast } from "@/hooks/use-toast";
-import { ToastAction } from "@/components/ui/toast";
 export default function NewOrdersPage() {
   const { toast } = useToast();
   const [paymentInfo, setPaymentInfo] = useState<any>({
