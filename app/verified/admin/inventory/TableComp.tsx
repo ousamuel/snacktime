@@ -32,7 +32,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown } from "lucide-react";
+import { ArrowUpDown, ChevronDown, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -231,6 +231,7 @@ export default function TableComp({ product }: { product: string }) {
   const router = useRouter();
   const { toast } = useToast();
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
@@ -292,6 +293,7 @@ export default function TableComp({ product }: { product: string }) {
   };
 
   const fetchUserAndFlower = async () => {
+    setRefreshing(true);
     const supabase = createClient();
     if (!user) {
       router.push("/");
@@ -327,6 +329,7 @@ export default function TableComp({ product }: { product: string }) {
       console.warn(fetchProductError);
     } else {
       setData(data);
+      setRefreshing(false);
     }
   };
   useEffect(() => {
@@ -477,18 +480,30 @@ export default function TableComp({ product }: { product: string }) {
           <button onClick={handleSubmit}>Submit to Supabase</button>
         </div> */}
       <div className="flex justify-between py-4 pr-2 md:pr-0">
-        <section className="">
+        <section className="h-fit">
           <h2 className="scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0">
             Inventory: {product.toUpperCase()}
           </h2>
-          <Input
-            placeholder="Filter by name..."
-            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-            onChange={(event) =>
-              table.getColumn("name")?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm ring-0"
-          />
+          <div className="flex gap-2">
+            <Input
+              placeholder="Filter by name..."
+              value={
+                (table.getColumn("name")?.getFilterValue() as string) ?? ""
+              }
+              onChange={(event) =>
+                table.getColumn("name")?.setFilterValue(event.target.value)
+              }
+              className="max-w-sm ring-0"
+            />
+            <Button
+              className=""
+              onClick={() => fetchUserAndFlower()}
+              disabled={refreshing}
+            >
+              {refreshing ? "Refreshing" : "Refresh"}
+              <RefreshCw className="w-[20px] pl-1" />
+            </Button>
+          </div>
           <div className="flex flex-col gap-2">
             {/* <RadioGroup
               value={selectedValue} // Controlled value for selected radio
