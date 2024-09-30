@@ -104,7 +104,16 @@ export default function TableComp({ product }: { product: string }) {
     let key = product == "flower" ? "total_lb_sold" : "total_units_sold";
     return {
       accessorKey: key, // Access nested field
-      header: product == "flower" ? "Sold (lbs)" : "Sold (units)", // Dynamically set header based on key
+      header: ({ column }: { column: any }) => (
+        <Button
+          variant="ghost"
+          className="pl-0"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          {product == "flower" ? "Sold (lbs)" : "Sold (units)"}
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }: { row: any }) => {
         const value = row.getValue(key);
         return value ? value : "- -"; // Adjust based on your data
@@ -166,7 +175,16 @@ export default function TableComp({ product }: { product: string }) {
     generateSoldColumn(),
     {
       accessorKey: "total_order_count",
-      header: "Total Orders",
+      header: ({ column }: { column: any }) => (
+        <Button
+          variant="ghost"
+          className="pl-0"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Total Orders
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
       cell: ({ row }) => <div>{row.getValue("total_order_count")}</div>,
     },
 

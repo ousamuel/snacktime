@@ -115,16 +115,33 @@ const columns: ColumnDef<unknown, any>[] = [
                     index > 0 ? "border-t border-foreground mt-1 pt-1" : ""
                   }
                 >
-                  <p className="font-bold min-w-fit whitespace-nowrap">
+                  <p
+                    className={`font-bold min-w-fit whitespace-nowrap rounded-sm flex items-end`}
+                  >
+                    <span
+                      className={`text-2xl mr-1 leading-none ${
+                        item.category.toLowerCase() === "flower"
+                          ? "text-green-500"
+                          : item.category.toLowerCase() === "vape"
+                            ? "text-blue-500"
+                            : item.category.toLowerCase() === "concentrate"
+                              ? "text-orange-500"
+                              : item.category.toLowerCase() === "edible"
+                                ? "text-purple-500"
+                                : "text-gray-500"
+                      }`}
+                    >
+                      •
+                    </span>
                     {item.name} - ${item.total_cost.toFixed(2)}
                   </p>
                   <p>
-                    Pricing: ${item.option_cost}/
+                    - Pricing: ${item.option_cost}/
                     {item.option_weight == "eighth"
                       ? "8th"
                       : item.option_weight}{" "}
                   </p>
-                  <p>Quantity: {item.quantity}</p>
+                  <p>• Quantity: {item.quantity}</p>
                 </li>
               ))}
             </ul>
@@ -273,6 +290,9 @@ const columns: ColumnDef<unknown, any>[] = [
       );
     },
   },
+  // {
+  //   accessorKey:""
+  // }
 ];
 
 export default function OrderTableComp() {
