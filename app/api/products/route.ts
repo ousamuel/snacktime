@@ -54,7 +54,7 @@ export async function POST(request: Request) {
       }
       return NextResponse.json({ status: 400, error: error.message });
     }
-    return NextResponse.json({ status: 201, success: "Successful insert" });
+    return NextResponse.json({ status: 201, success: "New product added" });
   } catch (error) {
     return NextResponse.json(
       { error: "An error occurred" },
@@ -78,19 +78,15 @@ export async function PATCH(request: Request) {
       .eq("id", formData.id);
     if (error) {
       console.log(error);
-      return NextResponse.json({ error: "Error patching" });
-    }
-    return NextResponse.json(
-      { data },
-      {
-        status: 201,
-        headers: {
-          "Access-Control-Allow-Origin": process.env.REDIRECT!,
-          "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        },
+      if (error.code == "23505") {
+        return NextResponse.json({
+          status: 400,
+          error: "Product Name already in use",
+        });
       }
-    );
+      return NextResponse.json({ status: 400, error: error.message });
+    }
+    return NextResponse.json({ status: 201, success: "Successful edit" });
   } catch (error) {
     return NextResponse.json(
       { error: "An error occurred" },

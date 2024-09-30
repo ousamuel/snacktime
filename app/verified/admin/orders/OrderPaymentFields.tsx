@@ -72,10 +72,10 @@ export const PaymentForm = ({
           </Label>
         );
       })}
+      {/* {formData.paymentType == "crypto" && <div>hello</div>} */}
     </form>
   );
 };
-
 export const OrderMethods = {
   pickup: ["pickupLocation", "additionalDetails"],
   delivery: ["deliveryAddress", "additionalDetails"],

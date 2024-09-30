@@ -2,7 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-textarea:focus {
+textarea:focus,
+option:focus {
   outline: none;
   resize: none;
 }
@@ -207,4 +208,8 @@ textarea:focus {
 .order-dialog section {
   min-width: 150px;
   flex-grow: 1;
+}
+
+#radix {
+  pointer-events: none;
 }

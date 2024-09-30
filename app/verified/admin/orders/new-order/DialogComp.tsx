@@ -58,7 +58,6 @@ export default function DialogComp({
       (prevOrderTotal: number) =>
         productData[selectedOption] * optionQuantity + prevOrderTotal
     );
-    console.log(newItem);
     // console.log(productData[selectedOption]);
     setOrderedItems([...orderedItems, newItem]);
     setOpenDialog(false);

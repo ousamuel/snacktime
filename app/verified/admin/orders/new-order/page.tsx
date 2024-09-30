@@ -14,6 +14,8 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/components/ui/command";
+import { X } from "lucide-react";
+
 import { debounce } from "lodash";
 import DialogComp from "./DialogComp";
 import { useDispatch, useSelector } from "react-redux";
@@ -199,7 +201,7 @@ export default function NewOrdersPage() {
               <div className="grid grid-cols-3 font-semibold border-b border-muted-foreground pb-2 mb-2">
                 <h3 className="text-left">Item</h3>
                 <h3 className="text-center">Quantity</h3>
-                <h3 className="text-right">Total</h3>
+                <h3 className="text-right pr-10">Total</h3>
               </div>
 
               {/* Items Mapping */}
@@ -227,13 +229,28 @@ export default function NewOrdersPage() {
                       </p>
                     </div>
                     <h3 className="text-center">{item.quantity}</h3>
-                    <div className="text-right">
-                      <h3>${item.total_cost.toFixed(2)}</h3>
-                      <p className="text-muted-foreground">
-                        {item.category == "flower"
-                          ? item.total_weight_in_lbs + " lbs"
-                          : item.quantity + " units"}
-                      </p>
+                    <div className="text-right flex justify-end">
+                      <section>
+                        <h3>${item.total_cost.toFixed(2)}</h3>
+                        <p className="text-muted-foreground">
+                          {item.category == "flower"
+                            ? item.total_weight_in_lbs + " lbs"
+                            : item.quantity + " units"}
+                        </p>
+                      </section>
+                      <Button
+                        className="flex items-center w-[40px] p-0 ml-1"
+                        onClick={() => {
+                          setOrderedItems((prevItems: any[]) =>
+                            prevItems.filter((_, i) => i !== index)
+                          );
+                          setOrderTotal(
+                            (prevTotal) => prevTotal - item.total_cost
+                          );
+                        }}
+                      >
+                        <X className="text-red-500" />
+                      </Button>
                     </div>
                   </div>
                 ))

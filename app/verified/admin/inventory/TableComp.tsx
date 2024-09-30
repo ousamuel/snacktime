@@ -21,6 +21,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+import {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
@@ -174,7 +182,23 @@ export default function TableComp({ product }: { product: string }) {
       ),
       cell: ({ row }) => <div>{row.getValue("total_order_count")}</div>,
     },
-
+    {
+      accessorKey: "total_revenue",
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="pl-0"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Total Revenue
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const rev = parseFloat(row.getValue("total_revenue"));
+        return <p>${rev.toFixed(2)}</p>;
+      },
+    },
     // {
     //   accessorKey: "description",
     //   header: "Description",
@@ -211,22 +235,6 @@ export default function TableComp({ product }: { product: string }) {
     //   },
     // },
     // {
-    //   accessorKey: "created_at",
-    //   header: "Created At",
-    //   cell: ({ row }) => {
-    //     const createdAt = new Date(row.getValue("created_at"));
-    //     return (
-    //       <div>
-    //         {createdAt.toLocaleDateString("en-US", {
-    //           year: "numeric",
-    //           month: "numeric",
-    //           day: "numeric",
-    //         })}
-    //       </div>
-    //     );
-    //   },
-    // },
-    // },
   ];
   const router = useRouter();
   const { toast } = useToast();
@@ -387,7 +395,6 @@ export default function TableComp({ product }: { product: string }) {
         body: JSON.stringify(formData),
       });
       const data = await res.json();
-      console.log(data);
       if (data.success) {
         fetchUserAndFlower();
         clearFormData();
@@ -406,7 +413,7 @@ export default function TableComp({ product }: { product: string }) {
         });
       }
     } catch (error) {
-      console.error("Error posting products:", error);
+      console.error("Error saving product:", error);
     }
   };
 
@@ -414,7 +421,9 @@ export default function TableComp({ product }: { product: string }) {
     const { name, value } = e.target;
     debounceSetFormData(name, value);
   };
-
+  const handleCategoryValueChange = (category: string) => {
+    setFormData((prev: any) => ({ ...prev, category }));
+  };
   // Debounce function
   const debounceSetFormData = useCallback(
     debounce((name, value) => {
@@ -684,7 +693,7 @@ export default function TableComp({ product }: { product: string }) {
                       return (
                         <div
                           key={`${columnKey}-${index}`}
-                          className="flex flex-col justify-end"
+                          className="flex flex-col justify-end grow"
                         >
                           <Label
                             htmlFor="category"
@@ -692,25 +701,41 @@ export default function TableComp({ product }: { product: string }) {
                           >
                             Category
                           </Label>
-                          <select
+                          {/* <select
                             name="category"
                             required
                             defaultValue={columnValue || ""}
                             onChange={handleFormValueChange}
-                            className="block min-w-[150px] w-full mt-1 border border-gray-300 rounded-md shadow-sm p-2 h-10 rounded-md bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible: focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
                           >
                             <option value="flower">Flower</option>
                             <option value="edible">Edible</option>
                             <option value="vape">Vape</option>
                             <option value="concentrate">Concentrate</option>
-                          </select>
+                          </select> */}
+                          <Select
+                            value={formData.category!}
+                            onValueChange={handleCategoryValueChange} // update state on change
+                          >
+                            <SelectTrigger className="w-[180px] mt-1 border border-gray-300">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="">
+                              <SelectItem value="flower">Flower</SelectItem>
+                              <SelectItem value="edible">Edible</SelectItem>
+                              <SelectItem value="vape">Vape</SelectItem>
+                              <SelectItem value="concentrate">
+                                Concentrate
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                       );
                     }
                     return (
                       <div
                         key={`${columnKey}-${index}`}
-                        className="flex flex-col justify-end grow"
+                        className={`flex flex-col justify-end grow ${columnKey == "name" && "min-w-[150px]"} ${index >= 3 && index <= 9 && "max-w-[140px]"}`}
                       >
                         {/* Label for the input */}
                         <Label
@@ -725,7 +750,9 @@ export default function TableComp({ product }: { product: string }) {
                               ? "Sold (lbs)"
                               : columnKey == "total_units_sold"
                                 ? "Sold (units)"
-                                : column.header}
+                                : columnKey == "total_revenue"
+                                  ? "Total Rev ($)"
+                                  : column.header}
                         </Label>
                         {/* Input field */}
                         <Input
